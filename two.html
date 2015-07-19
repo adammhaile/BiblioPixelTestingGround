@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="two.min.js"></script>
+    <script src="two/js/stats.js"></script>
+    <style>
+      body {
+        background-color: red;
+      }
+
+      #vis {
+        background-color: yellow;
+        border: 2px solid #000000;
+        height: 100px;
+        width: 100px;
+        float: left;
+      }
+
+    </style>
+
+    <script>
+      var rects = [];
+      var numX = 22;
+      var numY = numX;
+      var pixelSize = 15;
+
+      var stats = new Stats();
+
+      function update() {
+        stats.update();
+            //var c = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+            var c = "rgb(0, 0, 255)";
+            for (var i = 0; i < rects.length; i++) {
+              rects[i].fill = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+            } 
+      }
+
+      $(document).ready( function() {
+          document.body.appendChild(stats.domElement);
+              _.extend(stats.domElement.style, {
+                position: 'absolute',
+                left: 0,
+                bottom: 0
+              });
+
+          var elem = $("#vis");
+          elem.width(numX * pixelSize);
+          elem.height(numY * pixelSize);
+          var two = new Two({
+            autostart: true,
+            fullscreen: false,
+            width: elem.width(),
+            height: elem.height(),
+            type: Two.Types.svg
+          }).appendTo(elem.get(0));
+          
+          var pw = pixelSize;
+          var ph = pw;
+          for(var x=0; x<numX; x++){
+            for(var y=0; y<numY; y++){
+              var r = two.makeRectangle(x*pw+(pw/2), y*ph+(ph/2), pw, ph);
+              r.fill = "#00FF00";
+              r.stroke = "#000000";
+              rects.push(r);
+            }
+          }
+
+          two.update(); 
+          console.log("W:" + two.width + " H:" + two.height);
+          console.log(two.renderer);
+          two.bind('update', update);        
+      });
+    </script>
+  </head>
+  <body>
+    <div id="vis"></div>
+    
+  </body>
+</html>

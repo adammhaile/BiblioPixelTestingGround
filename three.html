@@ -1,0 +1,217 @@
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - interactive - raycasting - pointcloud</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+/*			body {
+				color: #ffffff;
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				position: absolute;
+				top: 0px;
+				width: 100%;
+				padding: 5px;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				font-weight: bold;
+			}
+			a {
+				color: #fff;
+			}*/
+		</style>
+	</head>
+
+	<body>
+		<div id="container"></div>
+		<script src="three.js"></script>
+
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+
+		<script>
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var renderer, scene, camera, stats;
+			var pointclouds;
+			var cloud;
+			var raycaster, intersects;
+			var mouse = new THREE.Vector2();
+			var intersection = null;
+			var spheres = [];
+			var spheresIndex = 0;
+			var clock;
+
+			var threshold = 0.1;
+			var pointSize = 0.2;
+			var width = 320;
+			var length = 240;
+			var rotateY = new THREE.Matrix4().makeRotationX( 0.005 );
+
+			init();
+			animate();
+
+			function generateRegularPointcloud( color, width, length ) {
+
+				var geometry = new THREE.Geometry();
+				var numPoints = width * length;
+
+				var colors = [];
+
+				var k = 0;
+
+				var pw = pointSize;
+				var ph = pw;
+
+				for( var i = 0; i < width; i++ ) {
+
+					for( var j = 0; j < length; j++ ) {
+
+						var u = i / width;
+						var v = j / length;
+						var x = u-0.5;//(i*pw);
+						var y = 0;
+						var z = v-0.5;//(j*ph);
+						var v = new THREE.Vector3( x,y,z );
+
+						geometry.vertices.push( v );
+						colors[ k ] = ( color.clone());
+
+						k++;
+
+					}
+
+				}
+
+				geometry.colors = colors;
+				geometry.computeBoundingBox();
+
+				var material = new THREE.PointCloudMaterial( { size: pointSize, vertexColors: THREE.VertexColors } );
+				var pointcloud = new THREE.PointCloud( geometry, material );
+
+				return pointcloud;
+
+			}
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				scene = new THREE.Scene();
+
+				clock = new THREE.Clock();
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.applyMatrix( new THREE.Matrix4().makeTranslation( 0,0,15 ) );
+				camera.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI/2 ) );
+
+
+				cloud = generateRegularPointcloud( new THREE.Color( 1,0,1 ), width, length );
+				cloud.scale.set( 10,10,10 );
+				cloud.position.set( 0,0,0 );
+				scene.add( cloud );
+
+				//pointclouds = [ pcRegular ];
+
+			
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				//
+
+				raycaster = new THREE.Raycaster();
+				raycaster.params.PointCloud.threshold = threshold;
+
+				//
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'click', onDocClick, false);
+
+			}
+
+			function onDocClick(event) {
+				// var i;
+				// for( var x = 0; x < width; x++ ) {
+				// 	for( var y = 0; y < length; y++ ) {
+				// 		i = x+(y*width);
+				// 		cloud.geometry.colors[i].setHex(Math.floor((Math.random() * 0xFFFFFF) + 1));
+				// 	}
+				// }
+				// cloud.geometry.colorsNeedUpdate=true;
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				var i;
+				for( var x = 0; x < width; x++ ) {
+					for( var y = 0; y < length; y++ ) {
+						i = x+(y*width);
+						cloud.geometry.colors[i].setHex(Math.floor((Math.random() * 0xFFFFFF) + 1));
+					}
+				}
+				cloud.geometry.colorsNeedUpdate=true;
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			var toggle = 0;
+
+			function render() {
+
+				//camera.applyMatrix( rotateY );
+				camera.updateMatrixWorld();
+
+				raycaster.setFromCamera( mouse, camera );
+
+				toggle += clock.getDelta();
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+
+</html>
