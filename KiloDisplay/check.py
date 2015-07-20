@@ -2,10 +2,15 @@ from kilo import *
 
 from bibliopixel.animation import MatrixCalibrationTest
 from matrix_animations import Bloom
-anim = MatrixCalibrationTest(led)
-anim = Bloom(led)
+
+from GameTest import GameTest
+from GamePadEmu import GamePadEmu
+from Snake import Snake
+
+pad = GamePadEmu()
+anim = Snake(led, pad)
 try:
-    anim.run(amt=6, fps=60)
+    anim.run(fps=30)
 except KeyboardInterrupt:
     led.all_off()
     led.update()

@@ -8,7 +8,7 @@ from bibliopixel.util import d
 
 class GamePadEmu():
     foundDevices = []
-    def __init__(self, btn_map = [["W", "UP"], ["S", "DOWN"], ["A", "LEFT"], ["D", "RIGHT"], [win32con.VK_SPACE, "RED"]]):
+    def __init__(self, btn_map = [[win32con.VK_UP, "UP"], [win32con.VK_DOWN, "DOWN"], [win32con.VK_LEFT, "LEFT"], [win32con.VK_RIGHT, "RIGHT"], [win32con.VK_SPACE, "RED"]]):
         self._map = btn_map
 
     def getKeys(self):

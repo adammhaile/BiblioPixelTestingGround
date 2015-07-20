@@ -108,7 +108,6 @@ namespace Vis
                 while (true)
                 {
                     var tcpClient = tcp.AcceptTcpClient();
-                    Console.WriteLine("Connected!");
                     NetworkStream stream = tcpClient.GetStream();
                     var data = new List<byte>();
                     int s = 0;
@@ -137,7 +136,6 @@ namespace Vis
                         {
                             if(cmd[0] == 2)
                             {
-                                Console.WriteLine("Updating");
                                 this.update(data.ToArray());
                             }
                             
@@ -145,7 +143,7 @@ namespace Vis
                         }
                         else
                         {
-                            Console.WriteLine("Only received " + data.Count + " bytes!");
+                            Console.WriteLine("Received " + data.Count + " bytes, but " + dataSize + " expected.");
                         }
                     }
                     
@@ -155,7 +153,7 @@ namespace Vis
                     tcpClient.Client.Shutdown(SocketShutdown.Both);
                     //tcpClient.GetStream().Close();
                     //tcpClient.Close();
-                    while (tcpClient.Connected) { Thread.Sleep(1); }
+                    //while (tcpClient.Connected) { Thread.Sleep(1); }
                     //Thread.Sleep(500);
                 }
             });
