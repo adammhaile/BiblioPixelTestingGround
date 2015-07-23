@@ -1,6 +1,6 @@
 import time, sys
 import bibliopixel.log as log
-log.setLogLevel(log.DEBUG)
+log.setLogLevel(log.INFO)
 
 from bibliopixel.led import *
 import bibliopixel.colors as colors
