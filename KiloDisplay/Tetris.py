@@ -17,13 +17,13 @@ maxfps = 	30
 
 color_map = [
 (0,   0,   0  ),
-(255, 85,  85),
-(100, 200, 115),
-(120, 108, 245),
-(255, 140, 50 ),
-(50,  120, 52 ),
-(146, 202, 73 ),
-(150, 161, 218 ),
+colors.Red,
+colors.Orange,
+colors.Yellow,
+colors.Green,
+colors.Blue,
+colors.Purple,
+colors.Violet,
 (35,  35,  35) # Helper color for background grid
 ]
 
@@ -230,18 +230,20 @@ class Tetris(BaseGameAnim):
     def step(self, amt=1):
         self._led.all_off()
         if self.gameover:
-            self.center_msg("""Game Over!\nYour score: %d Press space to continue""" % self.score)
+            self._led.all_off()
+            self._led.drawText("GAME", self.width/2-11, self.height/2-8)
+            self._led.drawText("OVER", self.width/2-11, self.height/2+1)
         else:
             if self.paused:
                 self.center_msg("Paused")
             else:
-                self.disp_msg("{}".format(self.score), 1, 1)
+                self.disp_msg("L{}".format(self.level), 0, 0)
                 # self.disp_msg("Pts: {} Lvl: {} L: %d".format(self.score, self.level, self.lines), 0,0)
                 self.draw_matrix(self.bground_grid, (3,9))
-                self._led.drawRect(2,8,cols+2,rows+2, colors.Red)
+                self._led.drawRect(2,8,cols+2,rows+2, color_map[8])
                 self.draw_matrix(self.board, (3,9))
                 self.draw_matrix(self.stone, (self.stone_x + 3, self.stone_y+9))
-                self.draw_matrix(self.next_stone, (cols+1,2))
+                self.draw_matrix(self.next_stone, (self.width-4, 1))
 
         for key in self._keys:
             if key == "UP":
@@ -255,9 +257,14 @@ class Tetris(BaseGameAnim):
                     else:
                         self._last_move[key] = self._keys[key]
             elif key == "FIRE":
-                if self._keys[key] and not self._lastFire:
-                    self._key_actions[key]()
-                self._lastFire = self._keys[key]
+                if self.gameover:
+                    if self._keys[key]:
+                        self._lastFire = True
+                        self.start_game()
+                else:
+                    if self._keys[key] and not self._lastFire:
+                        self._key_actions[key]()
+                    self._lastFire = self._keys[key]
             elif self._keys[key]:
                 self._key_actions[key]()
 
