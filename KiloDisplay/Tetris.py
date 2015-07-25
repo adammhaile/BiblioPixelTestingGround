@@ -11,12 +11,11 @@ import bibliopixel.util as util
 
 
 # The configuration
-cell_size =	18
-cols =		25
-rows =		50
+cols =		19
+rows =		40
 maxfps = 	30
 
-colors = [
+color_map = [
 (0,   0,   0  ),
 (255, 85,  85),
 (100, 200, 115),
@@ -79,18 +78,17 @@ def join_matrixes(mat1, mat2, mat2_off):
     return mat1
 
 def new_board():
-    board = [ [ 0 for x in xrange(cols) ]
-            for y in xrange(rows) ]
-    board += [[ 1 for x in xrange(cols)]]
+    board =  [[ 0 for x in xrange(cols) ] for y in xrange(rows)]
     return board
 
 class Tetris(BaseGameAnim):
     def __init__(self, led, inputDev):
         super(Tetris, self).__init__(led, inputDev)
 
-        self.width = cell_size*(cols+6)
-        self.height = cell_size*rows
-        self.rlim = cell_size*cols
+        if (self.width, self.height) != (25,50):
+            raise Exception("Sorry, this was lazily written to only work on a 25x50 display :(")
+
+        self.rlim = cols
         self.bground_grid = [[ 8 if x%2==y%2 else 0 for x in xrange(cols)] for y in xrange(rows)]
 
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
@@ -115,8 +113,8 @@ class Tetris(BaseGameAnim):
             'DOWN':		lambda:self.drop(True),
             'UP':		self.rotate_stone,
             # 'p':		self.toggle_pause,
-            'FIRE':	self.start_game,
-            # 'RETURN':	self.insta_drop
+            #'FIRE':	self.start_game,
+            'FIRE':	self.insta_drop
         }
 
         self.gameover = False
@@ -127,24 +125,14 @@ class Tetris(BaseGameAnim):
         self.score = 0
         self.lines = 0
         self._last_up = False
+        self._lastFire = False
         self._last_move = {"RIGHT": False, "LEFT": False}
 
-        self.setSpeed("drop", 5)
+        self.setSpeed("drop", 8)
         self.setSpeed("move", 2)
-        # pygame.time.set_timer(pygame.USEREVENT+1, 1000)
 
-    def disp_msg(self, msg, topleft):
-        pass
-        # x,y = topleft
-        # for line in msg.splitlines():
-        # 	self.screen.blit(
-        # 		self.default_font.render(
-        # 			line,
-        # 			False,
-        # 			(255,255,255),
-        # 			(0,0,0)),
-        # 		(x,y))
-        # 	y+=14
+    def disp_msg(self, msg, x, y):
+        self._led.drawText(msg, x, y, size=0)
 
     def center_msg(self, msg):
         pass
@@ -165,25 +153,20 @@ class Tetris(BaseGameAnim):
         for y, row in enumerate(matrix):
             for x, val in enumerate(row):
                 if val:
-                    self._led.set(off_x+x,off_y+y,colors[val])
-                    # pygame.draw.rect(self.screen,colors[val],
-                    # 	pygame.Rect(
-                    # 		(off_x+x) *
-                    # 		  cell_size,
-                    # 		(off_y+y) *
-                    # 		  cell_size,
-                    # 		cell_size,
-                    # 		cell_size),0)
+                    self._led.set(off_x+x,off_y+y,color_map[val])
 
     def add_cl_lines(self, n):
         linescores = [0, 40, 100, 300, 1200]
         self.lines += n
         self.score += linescores[n] * self.level
-        # if self.lines >= self.level*6:
-        # 	self.level += 1
-        # 	newdelay = 1000-50*(self.level-1)
-        # 	newdelay = 100 if newdelay < 100 else newdelay
-        # 	pygame.time.set_timer(pygame.USEREVENT+1, newdelay)
+        if self.lines >= self.level*6:
+            self.level += 1
+            s = self.getSpeed("drop")
+            s -= 1
+            if s <= 0:
+                self.win = True
+            else:
+                self.setSpeed("drop", s)
 
     def move(self, delta_x):
         if not self.gameover and not self.paused:
@@ -211,7 +194,7 @@ class Tetris(BaseGameAnim):
                 self.new_stone()
                 cleared_rows = 0
                 while True:
-                    for i, row in enumerate(self.board[:-1]):
+                    for i, row in enumerate(self.board):
                         if 0 not in row:
                             self.board = remove_row(
                               self.board, i)
@@ -252,18 +235,13 @@ class Tetris(BaseGameAnim):
             if self.paused:
                 self.center_msg("Paused")
             else:
-                # pygame.draw.line(self.screen,
-                #     (255,255,255),
-                #     (self.rlim+1, 0),
-                #     (self.rlim+1, self.height-1))
-                self.disp_msg("Next:", (self.rlim+cell_size,2))
-                self.disp_msg("Score: %d\n\nLevel: %d\\nLines: %d" % (self.score, self.level, self.lines),(self.rlim+cell_size, cell_size*5))
-                self.draw_matrix(self.bground_grid, (0,0))
-                self.draw_matrix(self.board, (0,0))
-                self.draw_matrix(self.stone,
-                    (self.stone_x, self.stone_y))
-                self.draw_matrix(self.next_stone,
-                    (cols+1,2))
+                self.disp_msg("{}".format(self.score), 1, 1)
+                # self.disp_msg("Pts: {} Lvl: {} L: %d".format(self.score, self.level, self.lines), 0,0)
+                self.draw_matrix(self.bground_grid, (3,9))
+                self._led.drawRect(2,8,cols+2,rows+2, colors.Red)
+                self.draw_matrix(self.board, (3,9))
+                self.draw_matrix(self.stone, (self.stone_x + 3, self.stone_y+9))
+                self.draw_matrix(self.next_stone, (cols+1,2))
 
         for key in self._keys:
             if key == "UP":
@@ -276,6 +254,10 @@ class Tetris(BaseGameAnim):
                         self._key_actions[key]()
                     else:
                         self._last_move[key] = self._keys[key]
+            elif key == "FIRE":
+                if self._keys[key] and not self._lastFire:
+                    self._key_actions[key]()
+                self._lastFire = self._keys[key]
             elif self._keys[key]:
                 self._key_actions[key]()
 
@@ -284,15 +266,3 @@ class Tetris(BaseGameAnim):
             self.drop(False)
 
         self._step += amt
-        # for event in pygame.event.get():
-        # 	if event.type == pygame.USEREVENT+1:
-        # 		self.drop(False)
-        # 	elif event.type == pygame.QUIT:
-        # 		self.quit()
-        # 	elif event.type == pygame.KEYDOWN:
-        # 		for key in key_actions:
-        # 			if event.key == eval("pygame.K_"
-        # 			+key):
-        # 				key_actions[key]()
-        #
-        # dont_burn_my_cpu.tick(maxfps)
