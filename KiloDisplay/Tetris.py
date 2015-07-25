@@ -127,6 +127,10 @@ class Tetris(BaseGameAnim):
         self.score = 0
         self.lines = 0
         self._last_up = False
+        self._last_move = {"RIGHT": False, "LEFT": False}
+
+        self.setSpeed("drop", 5)
+        self.setSpeed("move", 2)
         # pygame.time.set_timer(pygame.USEREVENT+1, 1000)
 
     def disp_msg(self, msg, topleft):
@@ -266,11 +270,17 @@ class Tetris(BaseGameAnim):
                 if not self._last_up and self._keys[key]:
                     self._key_actions[key]()
                 self._last_up = self._keys[key]
+            elif key == "LEFT" or key == "RIGHT":
+                if self.checkSpeed("move"):
+                    if self._last_move[key] or self._keys[key]:
+                        self._key_actions[key]()
+                    else:
+                        self._last_move[key] = self._keys[key]
             elif self._keys[key]:
                 self._key_actions[key]()
 
 
-        if self._step % 3 == 0:
+        if self.checkSpeed("drop"):
             self.drop(False)
 
         self._step += amt
