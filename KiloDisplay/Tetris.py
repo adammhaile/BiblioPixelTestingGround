@@ -99,7 +99,7 @@ class Tetris(BaseGameAnim):
             }
             self._input_dev.setLights(lights)
 
-        self.setSpeed("drop", 8)
+        self.setSpeed("drop", 6)
         self.rlim = cols
         self.bground_grid = [[ 8 if x%2==y%2 else 0 for x in xrange(cols)] for y in xrange(rows)]
 
@@ -111,7 +111,7 @@ class Tetris(BaseGameAnim):
         self.addKeyFunc(["UP", "A"], self.rotate_stone, speed=1, hold=False)
         self.addKeyFunc(["FIRE", "Y"], self.insta_drop, speed=1, hold=False)
         self.addKeyFunc("X", self.togglePause, speed=1, hold=False)
-        # self.addAnyFunc(self.clearLevelUp)
+        self.addAnyFunc(self.clearLevelUp)
         self.init_game()
 
     def togglePause(self):
@@ -119,8 +119,6 @@ class Tetris(BaseGameAnim):
 
     def clearLevelUp(self, keys = None):
         if self.levelUp:
-            print "cleared!"
-            print keys
             self.paused = False
             self.levelUp = False
 
@@ -176,7 +174,7 @@ class Tetris(BaseGameAnim):
         linescores = [0, 40, 100, 300, 1200]
         self.lines += n
         self.score += linescores[n] * self.level
-        if self.lines >= self.level*1:
+        if self.lines >= self.level*5:
             self.level += 1
             self.levelUp = True
             self.paused = True
@@ -270,10 +268,19 @@ class Tetris(BaseGameAnim):
                     self._led.drawText("D", x, y+40)
 
             else:
-                self.disp_msg("L{}".format(self.level), 0, 0)
-                # self.disp_msg("Pts: {} Lvl: {} L: %d".format(self.score, self.level, self.lines), 0,0)
-                self.draw_matrix(self.bground_grid, (3,9))
-                self._led.drawRect(2,8,cols+2,rows+2, color_map[8])
+                self.disp_msg("{}".format(self.score), 0, 0)
+                # self.draw_matrix(self.bground_grid, (3,9))
+                # self._led.drawRect(2,8,cols+2,rows+2, color_map[8])
+                self._led.drawLine(2,8, cols+3, 8,
+                    colorFunc=lambda pos: colors.hue_helper(pos, cols+2, self._speedStep*2))
+                self._led.drawLine(2,self.height-1, cols+3, self.height-1,
+                    colorFunc=lambda pos: colors.hue_helper(cols+2-pos, cols+2, self._speedStep*2))
+
+                self._led.drawLine(2,9, 2, self.height-2,
+                    colorFunc=lambda pos: colors.hue_helper(rows+2-pos, rows, self._speedStep*2))
+                self._led.drawLine(cols+3,9, cols+3, self.height-2,
+                    colorFunc=lambda pos: colors.hue_helper(pos, rows, self._speedStep*2))
+
                 self.draw_matrix(self.board, (3,9))
                 self.draw_matrix(self.stone, (self.stone_x + 3, self.stone_y+9))
                 self.draw_matrix(self.next_stone, (self.width-4, 1))
