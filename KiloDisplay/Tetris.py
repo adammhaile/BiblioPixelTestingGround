@@ -88,18 +88,41 @@ class Tetris(BaseGameAnim):
         if (self.width, self.height) != (25,50):
             raise Exception("Sorry, this was lazily written to only work on a 25x50 display :(")
 
+        if hasattr(self._input_dev, "setLights") and hasattr(self._input_dev, "setLightsOff"):
+            self._input_dev.setLightsOff(5)
+            lights = {
+                "A": (0,255,0),
+                "B": (0,0,0),
+                "X": (0,0,0),
+                "Y": (255,0,0),
+                "FIRE":(255,0,0)
+            }
+            self._input_dev.setLights(lights)
+
         self.setSpeed("drop", 8)
         self.rlim = cols
         self.bground_grid = [[ 8 if x%2==y%2 else 0 for x in xrange(cols)] for y in xrange(rows)]
 
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
 
-        self.addKeyFunc("LEFT", lambda:self.move(-1), speed=2, hold=True)
-        self.addKeyFunc("RIGHT", lambda:self.move(+1), speed=2, hold=True)
+        self.addKeyFunc("LEFT", lambda:self.move(-1), speed=3, hold=True)
+        self.addKeyFunc("RIGHT", lambda:self.move(+1), speed=3, hold=True)
         self.addKeyFunc("DOWN", lambda:self.drop(True), speed=1, hold=True)
-        self.addKeyFunc("UP", self.rotate_stone, speed=1, hold=False)
-        self.addKeyFunc("FIRE", self.insta_drop, speed=1, hold=False)
+        self.addKeyFunc(["UP", "A"], self.rotate_stone, speed=1, hold=False)
+        self.addKeyFunc(["FIRE", "Y"], self.insta_drop, speed=1, hold=False)
+        self.addKeyFunc("X", self.togglePause, speed=1, hold=False)
+        # self.addAnyFunc(self.clearLevelUp)
         self.init_game()
+
+    def togglePause(self):
+        self.paused = not self.paused
+
+    def clearLevelUp(self, keys = None):
+        if self.levelUp:
+            print "cleared!"
+            print keys
+            self.paused = False
+            self.levelUp = False
 
     def new_stone(self):
         self.stone = self.next_stone[:]
@@ -114,6 +137,7 @@ class Tetris(BaseGameAnim):
 
     def init_game(self):
         self.gameover = False
+        self.levelUp = False
         self.paused = False
         self.board = new_board()
         self.new_stone()
@@ -152,8 +176,10 @@ class Tetris(BaseGameAnim):
         linescores = [0, 40, 100, 300, 1200]
         self.lines += n
         self.score += linescores[n] * self.level
-        if self.lines >= self.level*6:
+        if self.lines >= self.level*1:
             self.level += 1
+            self.levelUp = True
+            self.paused = True
             s = self.getSpeed("drop")
             s -= 1
             if s <= 0:
@@ -221,6 +247,7 @@ class Tetris(BaseGameAnim):
             self.gameover = False
 
     def step(self, amt=1):
+        self.handleKeys()
         self._led.all_off()
         if self.gameover:
             self._led.all_off()
@@ -228,7 +255,20 @@ class Tetris(BaseGameAnim):
             self._led.drawText("OVER", self.width/2-11, self.height/2+1)
         else:
             if self.paused:
-                self.center_msg("Paused")
+                self._led.all_off()
+                if self.levelUp:
+                    self._led.drawText("LVL", self.width/2-11, self.height/2-8)
+                    self._led.drawText("{}".format(self.level), self.width/2-11, self.height/2+1)
+                else:
+                    x = self.width/2-2
+                    y = 1
+                    self._led.drawText("P", x, y+0)
+                    self._led.drawText("A", x, y+8)
+                    self._led.drawText("U", x, y+16)
+                    self._led.drawText("S", x, y+24)
+                    self._led.drawText("E", x, y+32)
+                    self._led.drawText("D", x, y+40)
+
             else:
                 self.disp_msg("L{}".format(self.level), 0, 0)
                 # self.disp_msg("Pts: {} Lvl: {} L: %d".format(self.score, self.level, self.lines), 0,0)
@@ -240,29 +280,7 @@ class Tetris(BaseGameAnim):
                 if self.checkSpeed("drop"):
                     self.drop(False)
 
-        # for key in self._keys:
-        #     if key == "UP":
-        #         if not self._last_up and self._keys[key]:
-        #             self._key_actions[key]()
-        #         self._last_up = self._keys[key]
-        #     elif key == "LEFT" or key == "RIGHT":
-        #         if self.checkSpeed("move"):
-        #             if self._last_move[key] or self._keys[key]:
-        #                 self._key_actions[key]()
-        #             else:
-        #                 self._last_move[key] = self._keys[key]
-        #     elif key == "FIRE":
-        #         if self.gameover:
-        #             if self._keys[key]:
-        #                 self._lastFire = True
-        #                 self.start_game()
-        #         else:
-        #             if self._keys[key] and not self._lastFire:
-        #                 self._key_actions[key]()
-        #             self._lastFire = self._keys[key]
-        #     elif key in self._key_actions and self._keys[key]:
-        #         self._key_actions[key]()
-
-        self.handleKeys()
+        if self._keys.FIRE or self._keys.Y and self.gameover:
+            self.start_game()
 
         self._step += amt

@@ -123,18 +123,23 @@ class SerialGamePad():
         return packet
 
     def getKeys(self):
-        packet = SerialGamePad._generateHeader(CMDTYPE.GET_BTNS, 0)
-        self._com.write(packet)
-        resp = self._com.read(1)
-        if len(resp) == 0:
-             SerialGamePad._comError()
-        elif ord(resp) != RETURN_CODES.SUCCESS:
-            SerialGamePad._printError(ord(resp))
-        resp = self._com.read(2)
-        if len(resp) != 2:
-            SerialGamePad._comError()
+        bits = 0
+        try:
+            packet = SerialGamePad._generateHeader(CMDTYPE.GET_BTNS, 0)
+            self._com.write(packet)
+            resp = self._com.read(1)
+            if len(resp) == 0:
+                 SerialGamePad._comError()
+            elif ord(resp) != RETURN_CODES.SUCCESS:
+                SerialGamePad._printError(ord(resp))
+            resp = self._com.read(2)
+            if len(resp) != 2:
+                SerialGamePad._comError()
 
-        bits = ord(resp[0]) + (ord(resp[1]) << 8)
+            bits = ord(resp[0]) + (ord(resp[1]) << 8)
+        except IOError:
+            log.error("IO Error Communicatng With Game Pad!")
+            
         index = 0
         result = {}
         for m in self._map:
@@ -153,7 +158,6 @@ class SerialGamePad():
             leds.extend(l)
 
         packet = SerialGamePad._generateHeader(CMDTYPE.SET_LEDS, len(leds))
-        print leds
         packet.extend(leds)
         self._com.write(packet)
         resp = self._com.read(1)
