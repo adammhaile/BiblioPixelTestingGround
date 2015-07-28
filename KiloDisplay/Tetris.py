@@ -88,10 +88,17 @@ class Tetris(BaseGameAnim):
         if (self.width, self.height) != (25,50):
             raise Exception("Sorry, this was lazily written to only work on a 25x50 display :(")
 
+        self.setSpeed("drop", 8)
         self.rlim = cols
         self.bground_grid = [[ 8 if x%2==y%2 else 0 for x in xrange(cols)] for y in xrange(rows)]
 
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
+
+        self.addKeyFunc("LEFT", lambda:self.move(-1), speed=2, hold=True)
+        self.addKeyFunc("RIGHT", lambda:self.move(+1), speed=2, hold=True)
+        self.addKeyFunc("DOWN", lambda:self.drop(True), speed=1, hold=True)
+        self.addKeyFunc("UP", self.rotate_stone, speed=1, hold=False)
+        self.addKeyFunc("FIRE", self.insta_drop, speed=1, hold=False)
         self.init_game()
 
     def new_stone(self):
@@ -106,17 +113,6 @@ class Tetris(BaseGameAnim):
             self.gameover = True
 
     def init_game(self):
-        self._key_actions = {
-            # 'ESCAPE':	self.quit,
-            'LEFT':		lambda:self.move(-1),
-            'RIGHT':	lambda:self.move(+1),
-            'DOWN':		lambda:self.drop(True),
-            'UP':		self.rotate_stone,
-            # 'p':		self.toggle_pause,
-            #'FIRE':	self.start_game,
-            'FIRE':	self.insta_drop
-        }
-
         self.gameover = False
         self.paused = False
         self.board = new_board()
@@ -127,9 +123,6 @@ class Tetris(BaseGameAnim):
         self._last_up = False
         self._lastFire = False
         self._last_move = {"RIGHT": False, "LEFT": False}
-
-        self.setSpeed("drop", 8)
-        self.setSpeed("move", 2)
 
     def disp_msg(self, msg, x, y):
         self._led.drawText(msg, x, y, size=0)
@@ -244,32 +237,32 @@ class Tetris(BaseGameAnim):
                 self.draw_matrix(self.board, (3,9))
                 self.draw_matrix(self.stone, (self.stone_x + 3, self.stone_y+9))
                 self.draw_matrix(self.next_stone, (self.width-4, 1))
+                if self.checkSpeed("drop"):
+                    self.drop(False)
 
-        for key in self._keys:
-            if key == "UP":
-                if not self._last_up and self._keys[key]:
-                    self._key_actions[key]()
-                self._last_up = self._keys[key]
-            elif key == "LEFT" or key == "RIGHT":
-                if self.checkSpeed("move"):
-                    if self._last_move[key] or self._keys[key]:
-                        self._key_actions[key]()
-                    else:
-                        self._last_move[key] = self._keys[key]
-            elif key == "FIRE":
-                if self.gameover:
-                    if self._keys[key]:
-                        self._lastFire = True
-                        self.start_game()
-                else:
-                    if self._keys[key] and not self._lastFire:
-                        self._key_actions[key]()
-                    self._lastFire = self._keys[key]
-            elif self._keys[key]:
-                self._key_actions[key]()
+        # for key in self._keys:
+        #     if key == "UP":
+        #         if not self._last_up and self._keys[key]:
+        #             self._key_actions[key]()
+        #         self._last_up = self._keys[key]
+        #     elif key == "LEFT" or key == "RIGHT":
+        #         if self.checkSpeed("move"):
+        #             if self._last_move[key] or self._keys[key]:
+        #                 self._key_actions[key]()
+        #             else:
+        #                 self._last_move[key] = self._keys[key]
+        #     elif key == "FIRE":
+        #         if self.gameover:
+        #             if self._keys[key]:
+        #                 self._lastFire = True
+        #                 self.start_game()
+        #         else:
+        #             if self._keys[key] and not self._lastFire:
+        #                 self._key_actions[key]()
+        #             self._lastFire = self._keys[key]
+        #     elif key in self._key_actions and self._keys[key]:
+        #         self._key_actions[key]()
 
-
-        if self.checkSpeed("drop"):
-            self.drop(False)
+        self.handleKeys()
 
         self._step += amt

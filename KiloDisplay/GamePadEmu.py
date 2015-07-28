@@ -8,7 +8,7 @@ from bibliopixel.util import d
 
 class GamePadEmu():
     foundDevices = []
-    def __init__(self, btn_map = [[win32con.VK_UP, "UP"], [win32con.VK_DOWN, "DOWN"], [win32con.VK_LEFT, "LEFT"], [win32con.VK_RIGHT, "RIGHT"], [win32con.VK_SPACE, "FIRE"]]):
+    def __init__(self, btn_map = [[win32con.VK_UP, "UP"], [win32con.VK_DOWN, "DOWN"], [win32con.VK_LEFT, "LEFT"], [win32con.VK_RIGHT, "RIGHT"], [win32con.VK_SPACE, "FIRE"], ["A","A"],["S","B"],["Z","X"],["X","Y"]]):
         self._map = btn_map
 
     def getKeys(self):
@@ -31,13 +31,8 @@ class GamePadEmu():
     def __exit__(self, type, value, traceback):
         pass
 
-if __name__ == "__main__":
-    import time
-    pad = GamePadEmu()
-    try:
-        count = 0
-        while True:
-            print pad.getKeys()
-            time.sleep(0.5)
-    except KeyboardInterrupt:
+    def setLights(self, data):
+        pass
+
+    def setLightsOff(self, count):
         pass
