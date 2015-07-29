@@ -110,7 +110,6 @@ class Tetris(BaseGameAnim):
         self.addKeyFunc(["UP", "A"], self.rotate_stone, speed=1, hold=False)
         self.addKeyFunc(["FIRE", "Y"], self.insta_drop, speed=1, hold=False)
         self.addKeyFunc("X", self.togglePause, speed=1, hold=False)
-        self.addAnyFunc(self.clearLevelUp)
         self.init_game()
 
     def togglePause(self):
@@ -136,6 +135,7 @@ class Tetris(BaseGameAnim):
     def init_game(self):
         self.lines_per_level = 6
         self.gameover = False
+        self.win = False
         self.levelUp = True
         self.doStart = False
         self.paused = True
@@ -243,19 +243,19 @@ class Tetris(BaseGameAnim):
 
     def start_game(self):
         self.doStart = False
-        if self.gameover:
+        if self.gameover or self.win:
             self.init_game()
             self.gameover = False
 
     def step(self, amt=1):
         hk = True
-        if (self.levelUp or self.gameover) and (self._lastKeys != self._keys) and any(v == True for v in self._keys.itervalues()):
+        if (self.levelUp or self.gameover or self.win) and (self._lastKeys != self._keys) and any(v == True for v in self._keys.itervalues()):
             self.doStart = True
         if self.doStart:
             if not any(v == True for v in self._keys.itervalues()):
                 if self.levelUp:
                     self.clearLevelUp()
-                elif self.gameover:
+                elif self.gameover or self.win:
                     self.start_game()
             else:
                 return
@@ -270,7 +270,18 @@ class Tetris(BaseGameAnim):
             self._led.drawText("OVER", self.width/2-11, self.height/2+1)
             s = "{}".format(self.score)
             self._led.drawText(s, self.width/2-(len(s)*4)/2+1, self.height/2+9, size=0)
+        elif self.win:
+            for x in range(self.width):
+                c = colors.hue_helper(self.width-x, self.width, self._speedStep*2)
+                self._led.drawLine(self.width/2, self.height/2, x, 0, c)
+                self._led.drawLine(self.width/2, self.height/2, self.width-1-x, self.height-1, c)
+            for y in range(self.height):
+                c = colors.hue_helper(y, self.height, self._speedStep*2)
+                self._led.drawLine(self.width/2, self.height/2, 0, y, c)
+                self._led.drawLine(self.width/2, self.height/2, self.width-1, self.height-1-y, c)
 
+            self._led.drawText("YOU", self.width/2-9, self.height/2-8, color=colors.Black, bg=None)
+            self._led.drawText("WIN!", self.width/2-10, self.height/2+1, color=colors.Black, bg=None)
         else:
             if self.paused:
                 self._led.all_off()
