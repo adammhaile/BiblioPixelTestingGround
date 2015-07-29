@@ -101,7 +101,6 @@ class Tetris(BaseGameAnim):
 
         self.setSpeed("drop", 6)
         self.rlim = cols
-        self.bground_grid = [[ 8 if x%2==y%2 else 0 for x in xrange(cols)] for y in xrange(rows)]
 
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
 
@@ -117,7 +116,8 @@ class Tetris(BaseGameAnim):
     def togglePause(self):
         self.paused = not self.paused
 
-    def clearLevelUp(self, keys = None):
+    def clearLevelUp(self):
+        self.doStart = False
         if self.levelUp:
             self.paused = False
             self.levelUp = False
@@ -134,9 +134,11 @@ class Tetris(BaseGameAnim):
             self.gameover = True
 
     def init_game(self):
+        self.lines_per_level = 6
         self.gameover = False
-        self.levelUp = False
-        self.paused = False
+        self.levelUp = True
+        self.doStart = False
+        self.paused = True
         self.board = new_board()
         self.new_stone()
         self.level = 1
@@ -174,7 +176,7 @@ class Tetris(BaseGameAnim):
         linescores = [0, 40, 100, 300, 1200]
         self.lines += n
         self.score += linescores[n] * self.level
-        if self.lines >= self.level*5:
+        if self.lines >= self.level*self.lines_per_level:
             self.level += 1
             self.levelUp = True
             self.paused = True
@@ -240,23 +242,42 @@ class Tetris(BaseGameAnim):
         self.paused = not self.paused
 
     def start_game(self):
+        self.doStart = False
         if self.gameover:
             self.init_game()
             self.gameover = False
 
     def step(self, amt=1):
-        self.handleKeys()
+        hk = True
+        if (self.levelUp or self.gameover) and (self._lastKeys != self._keys) and any(v == True for v in self._keys.itervalues()):
+            self.doStart = True
+        if self.doStart:
+            if not any(v == True for v in self._keys.itervalues()):
+                if self.levelUp:
+                    self.clearLevelUp()
+                elif self.gameover:
+                    self.start_game()
+            else:
+                return
+
+        if not self.doStart:
+            self.handleKeys()
+
         self._led.all_off()
         if self.gameover:
             self._led.all_off()
             self._led.drawText("GAME", self.width/2-11, self.height/2-8)
             self._led.drawText("OVER", self.width/2-11, self.height/2+1)
+            s = "{}".format(self.score)
+            self._led.drawText(s, self.width/2-(len(s)*4)/2+1, self.height/2+9, size=0)
+
         else:
             if self.paused:
                 self._led.all_off()
                 if self.levelUp:
-                    self._led.drawText("LVL", self.width/2-11, self.height/2-8)
-                    self._led.drawText("{}".format(self.level), self.width/2-11, self.height/2+1)
+                    self._led.drawText("LVL", self.width/2-8, self.height/2-8)
+                    l = "{}".format(self.level)
+                    self._led.drawText(l, self.width/2-(len(l)*6)/2+1, self.height/2+1)
                 else:
                     x = self.width/2-2
                     y = 1
@@ -268,26 +289,30 @@ class Tetris(BaseGameAnim):
                     self._led.drawText("D", x, y+40)
 
             else:
-                self.disp_msg("{}".format(self.score), 0, 0)
-                # self.draw_matrix(self.bground_grid, (3,9))
-                # self._led.drawRect(2,8,cols+2,rows+2, color_map[8])
+                self.disp_msg("{}".format(self.score), 1, 1)
+
+                lines_left = self.level*self.lines_per_level - self.lines
+                for l in range(lines_left):
+                    self._led.set(0, self.height-1-l*2, colors.Red)
+
+                #draw rainbow border
                 self._led.drawLine(2,8, cols+3, 8,
                     colorFunc=lambda pos: colors.hue_helper(pos, cols+2, self._speedStep*2))
                 self._led.drawLine(2,self.height-1, cols+3, self.height-1,
                     colorFunc=lambda pos: colors.hue_helper(cols+2-pos, cols+2, self._speedStep*2))
-
                 self._led.drawLine(2,9, 2, self.height-2,
                     colorFunc=lambda pos: colors.hue_helper(rows+2-pos, rows, self._speedStep*2))
                 self._led.drawLine(cols+3,9, cols+3, self.height-2,
                     colorFunc=lambda pos: colors.hue_helper(pos, rows, self._speedStep*2))
 
+                #draw current board state
                 self.draw_matrix(self.board, (3,9))
+                #draw current block
                 self.draw_matrix(self.stone, (self.stone_x + 3, self.stone_y+9))
+                #draw next block
                 self.draw_matrix(self.next_stone, (self.width-4, 1))
+                #drop block
                 if self.checkSpeed("drop"):
                     self.drop(False)
-
-        if self._keys.FIRE or self._keys.Y and self.gameover:
-            self.start_game()
 
         self._step += amt
