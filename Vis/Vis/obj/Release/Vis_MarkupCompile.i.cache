@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\
 Vis
 none
 false
-DEBUG;TRACE
+TRACE
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\App.xaml
 11151548125
 
-9-963039383
+9-72556868
 13738642453
 MainWindow.xaml;
 
-False
+True
 

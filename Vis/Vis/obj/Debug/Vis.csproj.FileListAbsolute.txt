@@ -12,3 +12,17 @@ C:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.Properties.Resources.re
 C:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.csproj.GenerateResource.Cache
 C:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.exe
 C:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.pdb
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\bin\Debug\Vis.exe.config
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.exe
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.pdb
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\bin\Debug\Vis.exe
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\bin\Debug\Vis.pdb
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.csprojResolveAssemblyReference.cache
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\MainWindow.g.cs
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\App.g.cs
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis_MarkupCompile.cache
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis_MarkupCompile.lref
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\MainWindow.baml
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.g.resources
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.Properties.Resources.resources
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Debug\Vis.csproj.GenerateResource.Cache

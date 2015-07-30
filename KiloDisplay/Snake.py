@@ -7,8 +7,8 @@ import bibliopixel.util as util
 class Snake(BaseGameAnim):
     def __init__(self, led, inputDev):
         super(Snake, self).__init__(led, inputDev)
-        self._growLen = 2
-        self._speed = 0.3
+        self._growLen = 3
+        self._speed = 0.4
         self._speedGrow = 0.1
         self._lives = 4
         self._level = 1
@@ -21,13 +21,20 @@ class Snake(BaseGameAnim):
         self._levelUp = True
         self._growCount = 0
         self._directions = [(0,-1), (0,1), (1,0), (-1,0)]
+
+        self.setSpeed("move", 4)
+
         self.resetBody()
         self.placeApple()
 
     def drawBody(self):
+        l = len(self._body)
+        i = 0
         for b in self._body:
+            c = colors.hue_helper(i, l, 1)
             x,y = b
-            self._led.set(x, y, colors.Red)
+            self._led.set(x, y, c)
+            i += 1
 
     def drawLives(self):
         for i in range(self._lives):
@@ -71,15 +78,15 @@ class Snake(BaseGameAnim):
         self._apCount = 0
         self._levelUp = True
         self._level += 1
-        self._speed += self._speedGrow
+        s =  self.getSpeed("move") - 1
+        if s<1: s=1
+        self.setSpeed("move", s)
+        # self._speed += self._speedGrow
         self.resetBody()
 
     def move(self):
-        d = util.tuple_mult(self._dir, (self._speed, self._speed))
-        x1, y1 = util.tuple_add(d, self._pos)
-        x,y = self._pos = (round(x1,2), round(y1,2))
-        x,y = (int(x),int(y))
-        if (x,y) != self._body[0]:
+        if self.checkSpeed("move"):
+            x, y = self._pos = util.tuple_add(self._dir, self._pos)
             self._body.insert(0, (x,y))
             if (x,y) == self._apple:
                 self._growCount = self._growLen
