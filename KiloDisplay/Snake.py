@@ -7,9 +7,7 @@ import bibliopixel.util as util
 class Snake(BaseGameAnim):
     def __init__(self, led, inputDev):
         super(Snake, self).__init__(led, inputDev)
-        self._growLen = 3
-        self._speed = 0.4
-        self._speedGrow = 0.1
+        self._growLen = 4
         self._lives = 4
         self._level = 1
         self._apCount = 0
@@ -21,8 +19,14 @@ class Snake(BaseGameAnim):
         self._levelUp = True
         self._growCount = 0
         self._directions = [(0,-1), (0,1), (1,0), (-1,0)]
+        self.doStart = False
 
         self.setSpeed("move", 4)
+
+        self.addKeyFunc("UP", lambda:self.changeDir(0), speed=1, hold=False)
+        self.addKeyFunc("DOWN", lambda:self.changeDir(1), speed=1, hold=False)
+        self.addKeyFunc("RIGHT", lambda:self.changeDir(2), speed=1, hold=False)
+        self.addKeyFunc("LEFT", lambda:self.changeDir(3), speed=1, hold=False)
 
         self.resetBody()
         self.placeApple()
@@ -62,7 +66,7 @@ class Snake(BaseGameAnim):
         self._gameOverCount = 0
         self._levelUp = True
         self._level = 1
-        self._speed = 0.3
+        self.setSpeed("move", 4)
         self._lives = 4
 
 
@@ -78,6 +82,7 @@ class Snake(BaseGameAnim):
         self._apCount = 0
         self._levelUp = True
         self._level += 1
+        self._growLen += 1
         s =  self.getSpeed("move") - 1
         if s<1: s=1
         self.setSpeed("move", s)
@@ -116,40 +121,59 @@ class Snake(BaseGameAnim):
                 break
         self._apple = (x, y)
 
+    def changeDir(self, newDir):
+        self._pos = self._body[0]
+        if newDir==0 and self._dir[1] == 0:
+            self._newDir = self._directions[0]
+        if newDir==1 and self._dir[1] == 0:
+            self._newDir = self._directions[1]
+        if newDir==2 and self._dir[0] == 0:
+            self._newDir = self._directions[2]
+        if newDir==3 and self._dir[0] == 0:
+            self._newDir = self._directions[3]
+
     def step(self, amt=1):
+
+        if (self._levelUp or self._gameOver) and (self._lastKeys != self._keys) and any(v == True for v in self._keys.itervalues()):
+            self.doStart = True
+        if self.doStart:
+            if not any(v == True for v in self._keys.itervalues()):
+                if self._levelUp:
+                    self.doStart = False
+                    self._levelUp = False
+                    self.resetBody()
+                    self.placeApple()
+                elif self._gameOver:
+                    self.doStart = False
+                    self._gameOver = False
+                    self.resetBody()
+                    self.placeApple()
+            else:
+                return
+        else:
+            self.handleKeys()
+
         if self._gameOver:
             self._led.all_off()
             self._led.drawText("GAME", self.width/2-11, self.height/2-8)
             self._led.drawText("OVER", self.width/2-11, self.height/2+1)
-            self._gameOverCount += 1
-            if self._gameOverCount > 45:
-                self.resetBody()
-                self.placeApple()
-                self._gameOver = False
+            # self._gameOverCount += 1
+            # if self._gameOverCount > 45:
+            #     self.resetBody()
+            #     self.placeApple()
+            #     self._gameOver = False
         elif self._levelUp:
             self._led.all_off()
             self._led.drawText("LVL", self.width/2-8, self.height/2-8)
             lvl = "{}".format(self._level)
             w = len(lvl)*6
             self._led.drawText(lvl, self.width/2-(w/2), self.height/2+1)
-            if self._keys.FIRE:#any(v > 0 for v in self._keys.itervalues()):
-                self._levelUp = False
-                self.resetBody()
-                self.placeApple()
-                self._lastKeys = None
+            # if self._keys.FIRE:#any(v > 0 for v in self._keys.itervalues()):
+            #     self._levelUp = False
+            #     self.resetBody()
+            #     self.placeApple()
+            #     self._lastKeys = None
         else:
-            if self._keys != self._lastKeys:
-                self._pos = self._body[0]
-                if self._keys.UP and self._dir[1] == 0:
-                    self._newDir = self._directions[0]
-                if self._keys.DOWN and self._dir[1] == 0:
-                    self._newDir = self._directions[1]
-                if self._keys.RIGHT and self._dir[0] == 0:
-                    self._newDir = self._directions[2]
-                if self._keys.LEFT and self._dir[0] == 0:
-                    self._newDir = self._directions[3]
-
-                self._lastKeys = self._keys
 
             self.move()
             self._led.all_off()

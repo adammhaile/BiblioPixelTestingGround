@@ -151,20 +151,6 @@ class Tetris(BaseGameAnim):
     def disp_msg(self, msg, x, y):
         self._led.drawText(msg, x, y, size=0)
 
-    def center_msg(self, msg):
-        pass
-        # for i, line in enumerate(msg.splitlines()):
-        # 	msg_image =  self.default_font.render(line, False,
-        # 		(255,255,255), (0,0,0))
-        #
-        # 	msgim_center_x, msgim_center_y = msg_image.get_size()
-        # 	msgim_center_x //= 2
-        # 	msgim_center_y //= 2
-        #
-        # 	self.screen.blit(msg_image, (
-        # 	  self.width // 2-msgim_center_x,
-        # 	  self.height // 2-msgim_center_y+i*22))
-
     def draw_matrix(self, matrix, offset):
         off_x, off_y  = offset
         for y, row in enumerate(matrix):
@@ -248,7 +234,6 @@ class Tetris(BaseGameAnim):
             self.gameover = False
 
     def step(self, amt=1):
-        hk = True
         if (self.levelUp or self.gameover or self.win) and (self._lastKeys != self._keys) and any(v == True for v in self._keys.itervalues()):
             self.doStart = True
         if self.doStart:
