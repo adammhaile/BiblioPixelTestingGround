@@ -76,15 +76,18 @@ class Flappy(BaseGameAnim):
                 self._speed += 1
             if self._speed == 0: self._speed = 1
 
-            for i in range(len(self._pipes)):
-                x,y = self._pipes[i]
-                if x == self._x:
-                    if self._pos <= y or self._pos >= y+self.height/3:
-                        self.gameover = True
-                    else:
-                        self.score += 5
-                        if self.score % 200 == 0:
-                            self.nextLevel()
+            if self._pos >= self.height or self._pos < 0:
+                self.gameover = True
+            else:
+                for i in range(len(self._pipes)):
+                    x,y = self._pipes[i]
+                    if x == self._x:
+                        if self._pos <= y or self._pos >= y+self.height/3:
+                            self.gameover = True
+                        else:
+                            self.score += 5
+                            if self.score % 200 == 0:
+                                self.nextLevel()
 
     def addPipe(self):
         y = randint(self.height/2 - self.height/4, self.height/2)
