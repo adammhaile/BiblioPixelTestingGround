@@ -4,9 +4,9 @@ import time
 from bibliopixel import log
 log.setLogLevel(log.DEBUG)
 
-driver = DriverSerial(LEDTYPE.NEOPIXEL, 5, c_order=ChannelOrder.GRB)
+driver = DriverSerial(LEDTYPE.NEOPIXEL, 350, c_order=ChannelOrder.RGB)
 led = LEDStrip(driver, threadedUpdate=False)
-led.setMasterBrightness(64)
+led.setMasterBrightness(192)
 
 try:
     while True:

@@ -1,7 +1,6 @@
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\bin\Release\Vis.exe.config
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\bin\Release\Vis.exe
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\bin\Release\Vis.pdb
-G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis.csprojResolveAssemblyReference.cache
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\MainWindow.g.cs
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\App.g.cs
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis_MarkupCompile.cache

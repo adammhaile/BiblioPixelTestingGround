@@ -24,9 +24,9 @@ namespace Vis
     /// </summary>
     public partial class MainWindow : Window
     {
-        public int width = 25;
-        public int height = 50;
-        public int pixelSize = 10;
+        public int width = 64;
+        public int height = 48;
+        public int pixelSize = 6;
         public List<Rectangle> pixels;
         private TcpListener srv;
 
@@ -89,6 +89,8 @@ namespace Vis
         public MainWindow()
         {
             InitializeComponent();
+            txtW.Text = this.width.ToString();
+            txtH.Text = this.height.ToString();
             this.pixels = setupGrid();
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -165,6 +167,16 @@ namespace Vis
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //this.srv.Stop();
+        }
+
+        private void txtW_KeyUp(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void txtH_KeyUp(object sender, KeyEventArgs e)
+        {
+
         }
     }
 }
