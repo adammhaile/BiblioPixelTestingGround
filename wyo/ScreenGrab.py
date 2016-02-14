@@ -54,7 +54,6 @@ class ScreenGrab(BaseMatrixAnim):
 
         padYoff = int(round(padTB * yoffset)) - padTB
         padXoff = int(round(padLR * xoffset)) - padLR
-        print padTB, padLR
 
         self._pad = (padTB+padYoff, padTB-padYoff, padLR+padXoff, padLR-padXoff)
 
