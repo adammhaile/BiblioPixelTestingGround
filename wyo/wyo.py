@@ -5,6 +5,7 @@ if __name__ == "__main__":
     import bibliopixel.colors as colors
     import bibliopixel.log as log
     import time
+    import os
 
     log.setLogLevel(log.DEBUG)
 
@@ -21,6 +22,7 @@ if __name__ == "__main__":
         params = wyo_controller.genDisplayParams()
     except:
         from bibliopixel.drivers.visualizer import DriverVisualizer
+        os.system("start Vis.exe 64 48")
         drivers = [DriverVisualizer(width=w, height=h * 3)]
         params = {
             "width": w,
