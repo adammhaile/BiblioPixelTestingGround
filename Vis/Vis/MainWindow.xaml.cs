@@ -24,14 +24,16 @@ namespace Vis
     /// </summary>
     public partial class MainWindow : Window
     {
-        public int width = 64;
-        public int height = 48;
+        public int width = 1;
+        public int height = 1;
         public int pixelSize = 6;
         public List<Rectangle> pixels;
         private TcpListener srv;
 
-        public List<Rectangle> setupGrid()
+        public List<Rectangle> setupGrid(int width, int height)
         {
+            this.width = width;
+            this.height = height;
             cvs.Width = (this.pixelSize * this.width) + this.width - 1;
             cvs.Height = (this.pixelSize * this.height) + this.height - 1;
             cvs.Background = new SolidColorBrush(Colors.Black);
@@ -89,9 +91,14 @@ namespace Vis
         public MainWindow()
         {
             InitializeComponent();
-            txtW.Text = this.width.ToString();
-            txtH.Text = this.height.ToString();
-            this.pixels = setupGrid();
+            string[] args = Environment.GetCommandLineArgs();
+            if(args.Length != 3)
+            {
+                MessageBox.Show("Must provide width and height! vis.exe <width> <height>");
+                Application.Current.Shutdown();
+            }
+   
+            this.pixels = setupGrid(int.Parse(args[1]), int.Parse(args[2]));
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -167,16 +174,6 @@ namespace Vis
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //this.srv.Stop();
-        }
-
-        private void txtW_KeyUp(object sender, KeyEventArgs e)
-        {
-
-        }
-
-        private void txtH_KeyUp(object sender, KeyEventArgs e)
-        {
-
         }
     }
 }

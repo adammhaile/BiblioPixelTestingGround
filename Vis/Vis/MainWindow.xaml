@@ -14,12 +14,12 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Menu Grid.Row="0">
+        <!--<Menu Grid.Row="0">
             <Label Margin="0">W</Label>
             <TextBox Width="40" Name="txtW" KeyUp="txtW_KeyUp"></TextBox>
             <Label Margin="0">H</Label>
             <TextBox Width="40" Name="txtH" KeyUp="txtH_KeyUp"></TextBox>
-        </Menu>
+        </Menu>-->
         <Canvas Grid.Row="1" Name="cvs" HorizontalAlignment="Left" Height="470" VerticalAlignment="Top" Width="243"/>
     </Grid>
 </Window>

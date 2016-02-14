@@ -11,3 +11,4 @@ G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis.Properties.Resources.
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis.csproj.GenerateResource.Cache
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis.exe
 G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis.pdb
+G:\GitHub\BiblioPixelTestingGround\Vis\Vis\obj\Release\Vis.csprojResolveAssemblyReference.cache

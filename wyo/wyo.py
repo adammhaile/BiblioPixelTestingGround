@@ -21,14 +21,15 @@ if __name__ == "__main__":
         params = wyo_controller.genDisplayParams()
     except:
         from bibliopixel.drivers.visualizer import DriverVisualizer
-        drivers = [DriverVisualizer(width=w, height=h*3)]
+        drivers = [DriverVisualizer(width=w, height=h * 3)]
         params = {
             "width": w,
             "height": h * 3,
             "serpentine": False
         }
 
-    led = LEDMatrix(drivers, threadedUpdate=True, masterBrightness=32, **params)
+    led = LEDMatrix(drivers, threadedUpdate=True,
+                    masterBrightness=32, **params)
 
     from BiblioPixelAnimations.matrix.bloom import Bloom
     from BiblioPixelAnimations.matrix.GameOfLife import GameOfLifeRGB
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     from BiblioPixelAnimations.matrix.Text import ScrollText
     from BiblioPixelAnimations.matrix.Mainframe import Mainframe
     from BiblioPixelAnimations.matrix.perlin_simplex import PerlinSimplex
+    from BiblioPixelAnimations.matrix.circlepop import CirclePop
     from ScreenGrab import ScreenGrab
     testcolors = [colors.Red, colors.Green,
                   colors.Blue, colors.White, colors.Off]
@@ -56,10 +58,13 @@ if __name__ == "__main__":
         # anim.run(fps=15)
         # anim = ScrollText(led, "WyoManiacal", xPos=NUM_LEDS_PER_STRIP/2, yPos=0, color=colors.White)
         while True:
-            #anim = Mainframe(led, scroll = False)
-            #anim.run(fps=5)
+            anim = CirclePop(led)
+            anim.run(fps=20)
+            anim = Mainframe(led, scroll = False)
+            anim.run(fps=5, max_steps=40)
             anim = PerlinSimplex(led, freq=32, octaves=1, type=True)
-            anim.run(amt = 1, fps=30, sleep=None, max_steps = 100, untilComplete = False, max_cycles = 0, threaded = False, joinThread = False, callback=None)
+            anim.run(amt=1, fps=30, sleep=None, max_steps=100, untilComplete=False,
+                     max_cycles=0, threaded=False, joinThread=False, callback=None)
             anim = Bloom(led, dir=True)
             anim.run(fps=30, amt=6, max_steps=100)
             anim = GameOfLifeRGB(led, toroidal=True)
