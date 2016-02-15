@@ -40,6 +40,8 @@ if __name__ == "__main__":
     from BiblioPixelAnimations.matrix.Mainframe import Mainframe
     from BiblioPixelAnimations.matrix.perlin_simplex import PerlinSimplex
     from BiblioPixelAnimations.matrix.circlepop import CirclePop
+    from BiblioPixelAnimations.matrix.LangtonsAnt import LangtonsAnt
+    from BiblioPixelAnimations.matrix.ImageAnim import ImageAnim, ImageAnimFolder
     from ScreenGrab import ScreenGrab
     testcolors = [colors.Red, colors.Green,
                   colors.Blue, colors.White, colors.Off]
@@ -56,12 +58,18 @@ if __name__ == "__main__":
         # anim.set_draw_obj(BasicSpectrumGraph(anim, fill=True, colors=rainbow))
         # anim.run(fps=30)
         #
-        # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
-        # anim.run(fps=15)
+        anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
+        anim.run(fps=15)
         # anim = ScrollText(led, "WyoManiacal", xPos=NUM_LEDS_PER_STRIP/2, yPos=0, color=colors.White)
         while True:
+            # anim = ImageAnimFolder(led, "./anims", cycles=3)
+            # anim.run()
+            anim = ImageAnim(led, imagePath="./anims/zelda.gif")
+            anim.run()#untilComplete=True, max_cycles=20)
+            # anim = LangtonsAnt(led, antColor=colors.Green, pathColor=colors.Red)
+            # anim.run(fps=30, seconds=5.4)#, max_steps=75)
             anim = CirclePop(led)
-            anim.run(fps=20)
+            anim.run(fps=20, max_steps=100)
             anim = Mainframe(led, scroll = False)
             anim.run(fps=5, max_steps=40)
             anim = PerlinSimplex(led, freq=32, octaves=1, type=True)
