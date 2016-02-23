@@ -46,43 +46,44 @@ if __name__ == "__main__":
     testcolors = [colors.Red, colors.Green,
                   colors.Blue, colors.White, colors.Off]
 
-    from msgeq7 import MSGEQ7
-    from spectrum import Spectrum, BasicSpectrumGraph
+    from msgeq7 import MSGEQ7, DummyData
+    from spectrum import Spectrum, BasicSpectrumGraph, SpectrumGrid, SpectrumMirror
     rainbow = [colors.Red, colors.Orange,
                colors.Yellow, colors.Green,
                colors.Blue, colors.Indigo,
                colors.Violet]
     try:
-        # eq = MSGEQ7()
-        # anim = Spectrum(led, audio_source=eq)
-        # anim.set_draw_obj(BasicSpectrumGraph(anim, fill=True, colors=rainbow))
-        # anim.run(fps=30)
-        #
-        anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
+        #eq = DummyData(data="eq.dat")
+        eq = MSGEQ7(lower_threshold = 30)
+        anim = Spectrum(led, audio_source=eq)
+        anim.set_draw_obj(SpectrumMirror(anim, fill=False, colors=rainbow))
+        #anim.set_draw_obj(BasicSpectrumGraph(anim, fill=True, colors=rainbow))
+        #anim.set_draw_obj(SpectrumGrid(anim))
+
         anim.run(fps=15)
+        #
+        # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
+        # anim.run(fps=12)
         # anim = ScrollText(led, "WyoManiacal", xPos=NUM_LEDS_PER_STRIP/2, yPos=0, color=colors.White)
         while True:
             # anim = ImageAnimFolder(led, "./anims", cycles=3)
             # anim.run()
-            anim = ImageAnim(led, imagePath="./anims/zelda.gif")
-            anim.run()#untilComplete=True, max_cycles=20)
+            #anim = ImageAnim(led, imagePath="./anims/zelda.gif")
+            #anim.run()#untilComplete=True, max_cycles=20)
             # anim = LangtonsAnt(led, antColor=colors.Green, pathColor=colors.Red)
             # anim.run(fps=30, seconds=5.4)#, max_steps=75)
-            anim = CirclePop(led)
-            anim.run(fps=20, max_steps=100)
-            anim = Mainframe(led, scroll = False)
-            anim.run(fps=5, max_steps=40)
+            # anim = CirclePop(led)
+            # anim.run(fps=20, max_steps=100)
+            # anim = Mainframe(led, scroll = False)
+            # anim.run(fps=5, max_steps=40)
             anim = PerlinSimplex(led, freq=32, octaves=1, type=True)
-            anim.run(amt=1, fps=30, sleep=None, max_steps=100, untilComplete=False,
-                     max_cycles=0, threaded=False, joinThread=False, callback=None)
+            anim.run(fps=30, seconds=5)
             anim = Bloom(led, dir=True)
-            anim.run(fps=30, amt=6, max_steps=100)
+            anim.run(fps=30, amt=6, seconds=5)
             anim = GameOfLifeRGB(led, toroidal=True)
-            anim.run(amt=1, fps=15, sleep=None, max_steps=75, untilComplete=False,
-                     max_cycles=0, threaded=False, joinThread=False, callback=None)
+            anim.run(amt=1, fps=15, seconds=5)
             anim = MatrixRainBow(led, tail=4, growthRate=7)
-            anim.run(amt=1, fps=20, sleep=None, max_steps=150, untilComplete=False,
-                     max_cycles=0, threaded=False, joinThread=False, callback=None)
+            anim.run(amt=1, fps=20, seconds=5)
             print "done"
     except KeyboardInterrupt, e:
         print e

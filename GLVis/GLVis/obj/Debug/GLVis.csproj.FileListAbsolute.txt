@@ -1,0 +1,11 @@
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\bin\Debug\GLVis.exe.config
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\bin\Debug\GLVis.exe
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\bin\Debug\GLVis.pdb
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\bin\Debug\OpenTK.dll
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\bin\Debug\OpenTK.pdb
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\bin\Debug\OpenTK.xml
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\obj\Debug\GLVis.csprojResolveAssemblyReference.cache
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\obj\Debug\GLVis.Properties.Resources.resources
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\obj\Debug\GLVis.csproj.GenerateResource.Cache
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\obj\Debug\GLVis.exe
+G:\GitHub\BiblioPixelTestingGround\GLVis\GLVis\obj\Debug\GLVis.pdb

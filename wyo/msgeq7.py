@@ -5,6 +5,10 @@ except ImportError as e:
     error = "Please install pyserial 2.7+! pip install pyserial"
     raise ImportError(error)
 
+
+import logging
+log = logging.getLogger()
+
 from distutils.version import LooseVersion
 
 if LooseVersion(serial.VERSION) < LooseVersion('2.7'):
@@ -13,8 +17,7 @@ if LooseVersion(serial.VERSION) < LooseVersion('2.7'):
     log.logger.error(error)
     raise ImportError(error)
 
-import logging
-log = logging.getLogger()
+import struct
 
 
 class CMDTYPE:
@@ -33,17 +36,34 @@ class RETURN_CODES:
 class SerialError(Exception):
     pass
 
+class DummyData(object):
+    def __init__(self, data="eq.dat"):
+        self.file = data
+        self.f = open(self.file, mode="rb")
+        self._struct = struct.Struct("<hhhhhhh")
+
+    def get_audio_data(self):
+        resp = self.f.read(28)
+        if len(resp) != 28:
+            self.f.seek(0)
+            resp = self.f.read(28)
+
+        return (
+            [i for i in self._struct.unpack(resp[0:14])],
+            [i for i in self._struct.unpack(resp[14:28])]
+        )
 
 class MSGEQ7(object):
     foundDevices = []
 
-    def __init__(self, lower_threshold=20, dev="", hardwareID="1B4F:9206"):
+    def __init__(self, lower_threshold=70, dev="", hardwareID="1B4F:9206"):
         self._hardwareID = hardwareID
         self._com = None
         self.dev = dev
         self.interp_map = [max(
-            0, (((i - lower_threshold) * 255) / (255 - lower_threshold))) for i in range(256)]
+            0, (((i - lower_threshold) * 1023) / (1023 - lower_threshold))) for i in range(1024)]
 
+        self._struct = struct.Struct("<hhhhhhh")
         resp = self._connect()
         if resp != RETURN_CODES.SUCCESS:
             MSGEQ7._printError(resp)
@@ -97,7 +117,6 @@ class MSGEQ7(object):
             try:
                 self._com = serial.Serial(self.dev, timeout=5)
             except serial.SerialException as e:
-                print e
                 ports = MSGEQ7.findSerialDevices(self._hardwareID)
                 error = "Invalid port specified. No COM ports available."
                 if len(ports) > 0:
@@ -107,7 +126,7 @@ class MSGEQ7(object):
                 raise SerialError(error)
 
             packet = MSGEQ7._generateHeader(CMDTYPE.INIT, 0)
-            print [i for i in packet]
+
             self._com.write(packet)
 
             resp = self._com.read(1)
@@ -140,13 +159,24 @@ class MSGEQ7(object):
                 MSGEQ7._comError()
             elif ord(resp) != RETURN_CODES.SUCCESS:
                 MSGEQ7._printError(ord(resp))
-            resp = self._com.read(14)
-            if len(resp) != 14:
+            resp = self._com.read(28)
+            if len(resp) != 28:
                 MSGEQ7._comError()
 
             return (
-                [self.interp_map[ord(i)] for i in resp[0:7]],
-                [self.interp_map[ord(i)] for i in resp[7:14]],
+                [self.interp_map[i] for i in self._struct.unpack(resp[0:14])],
+                [self.interp_map[i] for i in self._struct.unpack(resp[14:28])]
             )
         except IOError:
             log.error("IO Error Communicatng With Game Pad!")
+
+# import time
+# eq = MSGEQ7(lower_threshold=70, dev="", hardwareID="1B4F:9206")
+# with open("eq.dat", mode="wb+") as f:
+#     s = struct.Struct("<hhhhhhh")
+#     while True:
+#         data = eq.get_audio_data()
+#         print data
+#         f.write(s.pack(*data[0]))
+#         f.write(s.pack(*data[1]))
+#         time.sleep(30.0/1000.0)
