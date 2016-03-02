@@ -30,8 +30,7 @@ if __name__ == "__main__":
             "serpentine": False
         }
 
-    led = LEDMatrix(drivers, threadedUpdate=True,
-                    masterBrightness=32, **params)
+    led = LEDMatrix(drivers, threadedUpdate=True, masterBrightness=32, **params)
 
     from BiblioPixelAnimations.matrix.bloom import Bloom
     from BiblioPixelAnimations.matrix.GameOfLife import GameOfLifeRGB
@@ -42,25 +41,34 @@ if __name__ == "__main__":
     from BiblioPixelAnimations.matrix.circlepop import CirclePop
     from BiblioPixelAnimations.matrix.LangtonsAnt import LangtonsAnt
     from BiblioPixelAnimations.matrix.ImageAnim import ImageAnim, ImageAnimFolder
+    from system_eq import EQ
     from ScreenGrab import ScreenGrab
     testcolors = [colors.Red, colors.Green,
                   colors.Blue, colors.White, colors.Off]
 
     from msgeq7 import MSGEQ7, DummyData
-    from spectrum import Spectrum, BasicSpectrumGraph, SpectrumGrid, SpectrumMirror
+    from spectrum import Spectrum, BasicSpectrumGraph, SpectrumGrid, SpectrumMirror, Circles, Scroll, Spread
     rainbow = [colors.Red, colors.Orange,
                colors.Yellow, colors.Green,
                colors.Blue, colors.Indigo,
                colors.Violet]
-    try:
-        #eq = DummyData(data="eq.dat")
-        eq = MSGEQ7(lower_threshold = 30)
-        anim = Spectrum(led, audio_source=eq)
-        anim.set_draw_obj(SpectrumMirror(anim, fill=False, colors=rainbow))
-        #anim.set_draw_obj(BasicSpectrumGraph(anim, fill=True, colors=rainbow))
-        #anim.set_draw_obj(SpectrumGrid(anim))
 
-        anim.run(fps=15)
+    anim = None
+    try:
+
+        # anim = EQ(led)
+        # anim.run(fps=30)
+        #eq = DummyData(data="eq.dat")
+        # eq = MSGEQ7(lower_threshold = 70)
+        # anim = Spectrum(led, audio_source=eq)
+        # # # #anim.set_draw_obj(Scroll(anim, color_list=rainbow))
+        # anim.set_draw_obj(Spread(anim, color_list=rainbow))
+        # #anim.set_draw_obj(Circles(anim, colors=rainbow))
+        # #anim.set_draw_obj(SpectrumMirror(anim, fill=False, colors=rainbow))
+        # #anim.set_draw_obj(BasicSpectrumGraph(anim, fill=True, colors=rainbow))
+        # #anim.set_draw_obj(SpectrumGrid(anim))
+        #
+        # anim.run(fps=15)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
         # anim.run(fps=12)
@@ -72,10 +80,10 @@ if __name__ == "__main__":
             #anim.run()#untilComplete=True, max_cycles=20)
             # anim = LangtonsAnt(led, antColor=colors.Green, pathColor=colors.Red)
             # anim.run(fps=30, seconds=5.4)#, max_steps=75)
-            # anim = CirclePop(led)
-            # anim.run(fps=20, max_steps=100)
-            # anim = Mainframe(led, scroll = False)
-            # anim.run(fps=5, max_steps=40)
+            anim = CirclePop(led)
+            anim.run(fps=60, seconds=5)
+            anim = Mainframe(led, scroll = False)
+            anim.run(fps=5, max_steps=40)
             anim = PerlinSimplex(led, freq=32, octaves=1, type=True)
             anim.run(fps=30, seconds=5)
             anim = Bloom(led, dir=True)
@@ -88,6 +96,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt, e:
         print e
         print "exce"
+        anim.cleanup()
         led.all_off()
         led.update()
         time.sleep(1)

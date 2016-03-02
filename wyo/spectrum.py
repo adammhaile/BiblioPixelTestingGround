@@ -48,6 +48,36 @@ class BasicSpectrumGraph(BaseSpectrumGraph):
             pos += bar_w
             count += 1
 
+class Spread(BaseSpectrumDraw):
+
+    def __init__(self, anim, use_hue=False, color_list=[colors.Red]):
+        super(Spread, self).__init__(anim)
+        self.height_map = [((i * (self.height/2 - 1)) / (1023))
+                           for i in range(1024)]
+        self.color_map = [colors.hue2rgb((i * (255)) / (self.width - 1)) for i in range(self.width)]
+        self.center_line = self.height / 2
+        self.colors = color_list
+        self.use_hue = use_hue
+        self.offset = 0
+
+    def draw(self, left, right):
+        for i in range(self.width / 2):
+            h = self.height_map[left[(i+self.offset)%len(left)]]
+            c = self.color_map[i]
+            if h:
+                # self.led.drawLine(i*2, 0, i*2, h, c)
+                # self.led.drawLine(i*2, self.height-1, i*2, self.height - h, c)
+                self.led.drawLine(i*2, self.center_line, i*2, self.center_line + h, c)
+                self.led.drawLine(i*2, self.center_line - 1, i*2, self.center_line - 1 - h, c)
+
+            h = self.height_map[right[(i+self.offset)%len(right)]]
+            if h:
+                # self.led.drawLine(i*2+1, 0, i*2+1, h, c)
+                # self.led.drawLine(i*2+1, self.height-1, i*2+1, self.height - h, c)
+                self.led.drawLine(i*2+1, self.center_line, i*2+1, self.center_line + h, c)
+                self.led.drawLine(i*2+1, self.center_line-1, i*2+1, self.center_line - 1 - h, c)
+        self.offset += 1
+
 class SpectrumMirror(BaseSpectrumDraw):
     def __init__(self, anim, fill=True, use_hue=False, colors=[colors.Red]):
         super(SpectrumMirror, self).__init__(anim)
@@ -61,7 +91,6 @@ class SpectrumMirror(BaseSpectrumDraw):
         self.center_line = self.height / 2
         self.colors = colors
         self.use_hue = use_hue
-        print self.center_line
 
     def draw(self, left, right):
         chan = len(left)
@@ -85,6 +114,53 @@ class SpectrumMirror(BaseSpectrumDraw):
                 self.rect(pos, self.center_line , bar_w, self.height_map[lr], cr)
             pos += bar_w
             count += 1
+
+class Circles(BaseSpectrumDraw):
+    def __init__(self, anim, colors=[colors.Red]):
+        super(Circles, self).__init__(anim)
+        d = self.width
+        if self.height <= self.width:
+            d = self.height
+        self.map = [((i * (d/2 - 1)) / (1023)) for i in range(1024)]
+        self.center = (self.width / 2, self.height / 2)
+        self.colors = colors
+
+    def draw(self, left, right):
+        for i in range(len(left)):
+            avg = self.map[(left[i] + right[i]) / 2]
+            if avg:
+                c = self.colors[i % len(self.colors)]
+                self.led.drawCircle(self.center[0], self.center[1], avg, c)
+
+class Scroll(BaseSpectrumDraw):
+    def __init__(self, anim, color_list=[colors.Red]):
+        super(Scroll, self).__init__(anim)
+        self.height_map = [((i * (self.height/2 - 1)) / (1023))
+                           for i in range(1024)]
+
+        self.color_map = [colors.hue2rgb((i * (255)) / (self.width - 1)) for i in range(self.width)]
+
+        self.center_line = self.height / 2
+        self.colors = color_list
+        self.data = [(0,0)] * self.width
+
+    def draw(self, left, right):
+        al = sum(left) / len(left)
+        ar = sum(right) / len(right)
+        self.data.pop(0)
+        self.data.append((al, ar))
+        for i in range(self.width):
+            ll, lr = self.data[i]
+            #cl = cr = self.colors[i % len(self.colors)]
+            # cl = self.color_map[ll]
+            # cr = self.color_map[lr]
+            cl = cr = self.color_map[i]
+            if self.height_map[ll]:
+                self.led.drawLine(i, self.center_line, i, self.center_line + self.height_map[ll], cl)
+
+            if self.height_map[lr]:
+                self.led.drawLine(i, self.center_line - 1 , i, self.center_line - 1 - self.height_map[lr], cr)
+
 
 
 
