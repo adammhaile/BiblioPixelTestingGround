@@ -9,6 +9,8 @@ class BaseSpectrumDraw(object):
         self.width = anim.width
         self.height = anim.height
         self.led = anim._led
+        self.height_map = [((i * (self.height - 1)) / (1023))
+                           for i in range(1024)]
 
     def draw(self, data):
         raise NotImplementedError("Cannot call draw on the base class.")
@@ -62,12 +64,12 @@ class BasicSpectrumGraphOld(BaseSpectrumGraph):
             count += 1
 
 
-class BasicLineGraph(BaseSpectrumDraw):
+class PeakLineGraph(BaseSpectrumDraw):
 
     def __init__(self, anim):
-        super(BasicLineGraph, self).__init__(anim)
-        self.height_map = [((i * (self.height - 1)) / (1023))
-                           for i in range(1024)]
+        super(PeakLineGraph, self).__init__(anim)
+        self.peak_dots = True
+        self.peaks = [0] * self.width
 
     def draw(self, data):
         chan = len(data)
@@ -79,11 +81,30 @@ class BasicLineGraph(BaseSpectrumDraw):
         count = 0
         for level in data:
             c = color_list[count]
-            if self.height_map[level]:
-                self.draw_bar(pos, self.height - self.height_map[level], bar_w, self.height_map[level], c, fill=True)
-            # self.led.drawLine(pos, self.height, pos, self.height - self.height_map[level], c)
+            h = self.height_map[level]
+            if h:
+                self.draw_bar(pos, self.height - h, bar_w, h, c, fill=True)
+
+            if self.peak_dots:
+                if self.peaks[count] > 0 and self.peaks[count] > h:
+                    for i in range(bar_w):
+                        self.led.set(pos + i, self.height - self.peaks[count], c)
+                if h >= self.peaks[count]:
+                    self.peaks[count] = h
+                else:
+                    self.peaks[count] -= 1
+                if self.peaks[count] < 0:
+                    self.peaks[count] = 0
+
             pos += bar_w
             count += 1
+
+
+class BasicLineGraph(PeakLineGraph):
+
+    def __init__(self, anim):
+        super(BasicLineGraph, self).__init__(anim)
+        self.peak_dots = False
 
 
 class Spread(BaseSpectrumDraw):
