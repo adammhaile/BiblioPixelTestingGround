@@ -13,6 +13,16 @@ class BaseSpectrumDraw(object):
     def draw(self, data):
         raise NotImplementedError("Cannot call draw on the base class.")
 
+    def draw_bar(self, x, y, w, h, c, fill=True):
+        if w > 1:
+            if fill:
+                self.led.fillRect(x, y, w, h, c)
+            else:
+                self.led.drawRect(x, y, w, h, c)
+        else:
+            self.led.drawLine(x, y, x, y + h, c)
+
+
 
 class BaseSpectrumGraph(BaseSpectrumDraw):
 
@@ -61,16 +71,19 @@ class BasicLineGraph(BaseSpectrumDraw):
 
     def draw(self, data):
         chan = len(data)
+        bar_w = int(self.width / chan)
+        pos = (self.width - (bar_w * chan)) / 2
 
-        pos = (self.width - chan)
         count = 0
         for level in data:
             if self.use_hue:
                 c = colors.hue2rgb(level)
             else:
                 c = self.colors[count % len(self.colors)]
-            self.led.drawLine(pos, self.height, pos, self.height - self.height_map[level], c)
-            pos += 1
+            if self.height_map[level]:
+                self.draw_bar(pos, 0, bar_w, self.height_map[level], c, fill=True)
+            # self.led.drawLine(pos, self.height, pos, self.height - self.height_map[level], c)
+            pos += bar_w
             count += 1
 
 
