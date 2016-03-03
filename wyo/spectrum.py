@@ -20,8 +20,10 @@ class BaseSpectrumDraw(object):
             else:
                 self.led.drawRect(x, y, w, h, c)
         else:
-            self.led.drawLine(x, y, x, y + h, c)
+            self.led._drawFastVLine(x, y, h, c)
 
+    def color_map(self, width):
+        return [colors.hue2rgb((i * (255)) / (width - 1)) for i in range(width)]
 
 
 class BaseSpectrumGraph(BaseSpectrumDraw):
@@ -62,91 +64,82 @@ class BasicSpectrumGraphOld(BaseSpectrumGraph):
 
 class BasicLineGraph(BaseSpectrumDraw):
 
-    def __init__(self, anim, fill=True, use_hue=False, color_list=[colors.Red]):
+    def __init__(self, anim):
         super(BasicLineGraph, self).__init__(anim)
         self.height_map = [((i * (self.height - 1)) / (1023))
                            for i in range(1024)]
-        self.colors = color_list
-        self.use_hue = use_hue
 
     def draw(self, data):
         chan = len(data)
         bar_w = int(self.width / chan)
         pos = (self.width - (bar_w * chan)) / 2
 
+        color_list = self.color_map(chan)
+
         count = 0
         for level in data:
-            if self.use_hue:
-                c = colors.hue2rgb(level)
-            else:
-                c = self.colors[count % len(self.colors)]
+            c = color_list[count]
             if self.height_map[level]:
-                self.draw_bar(pos, 0, bar_w, self.height_map[level], c, fill=True)
+                self.draw_bar(pos, self.height - self.height_map[level], bar_w, self.height_map[level], c, fill=True)
             # self.led.drawLine(pos, self.height, pos, self.height - self.height_map[level], c)
             pos += bar_w
             count += 1
 
 
-class SpreadOld(BaseSpectrumDraw):
+class Spread(BaseSpectrumDraw):
 
-    def __init__(self, anim, use_hue=False, color_list=[colors.Red]):
-        super(SpreadOld, self).__init__(anim)
+    def __init__(self, anim):
+        super(Spread, self).__init__(anim)
         self.height_map = [((i * (self.height / 2 - 1)) / (1023))
                            for i in range(1024)]
-        self.color_map = [colors.hue2rgb((i * (255)) / (self.width - 1)) for i in range(self.width)]
         self.center_line = self.height / 2
-        self.colors = color_list
-        self.use_hue = use_hue
         self.offset = 0
 
     def draw(self, data):
         chan = len(data)
-        left = data[0:chan / 2]
-        right = data[chan / 2:chan]
-        for i in range(self.width):
-            h = self.height_map[left[(i + self.offset) % len(left)]]
-            c = self.color_map[i]
-            if h:
-                self.led.drawLine(i * 2, self.center_line, i * 2, self.center_line + h, c)
-                self.led.drawLine(i * 2, self.center_line - 1, i * 2, self.center_line - 1 - h, c)
-
-            h = self.height_map[right[(i + self.offset) % len(right)]]
-            if h:
-                self.led.drawLine(i * 2 + 1, self.center_line, i * 2 + 1, self.center_line + h, c)
-                self.led.drawLine(i * 2 + 1, self.center_line - 1, i * 2 + 1, self.center_line - 1 - h, c)
-        self.offset += 1
-
-
-class Spread(BaseSpectrumDraw):
-
-    def __init__(self, anim, use_hue=False, color_list=[colors.Red]):
-        super(Spread, self).__init__(anim)
-        self.height_map = [((i * (self.height / 2 - 1)) / (1023))
-                           for i in range(1024)]
-        self.color_map = [colors.hue2rgb((i * (255)) / (self.width - 1)) for i in range(self.width)]
-        self.center_line = self.height / 2
-        self.colors = color_list
-        self.use_hue = use_hue
-        self.offset = 0
-
-    def draw(self, data):
-        # chan = len(data)
-        # left = data[0:chan / 2]
-        # right = data[chan / 2:chan]
-        print data
-        for i in range(self.width):
+        color_list = self.color_map(chan)
+        bar_w = int(self.width / chan)
+        pos = (self.width - (bar_w * chan)) / 2
+        for i in range(chan):
             h = self.height_map[data[(i + self.offset) % len(data)]]
-            c = self.color_map[i]
+            c = color_list[i]
             if h:
-                self.led.drawLine(i, self.center_line, i, self.center_line + h, c)
-                self.led.drawLine(i, self.center_line - 1, i, self.center_line - 1 - h, c)
+                self.draw_bar(pos, self.center_line - h, bar_w, h, c)
+                self.draw_bar(pos, self.center_line, bar_w, h, c)
+            pos += bar_w
+        #self.offset += 1
 
-        #     h = self.height_map[right[(i + self.offset) % len(right)]]
-        #     if h:
-        #         self.led.drawLine(i * 2 + 1, self.center_line, i * 2 + 1, self.center_line + h, c)
-        #         self.led.drawLine(i * 2 + 1, self.center_line - 1, i * 2 + 1, self.center_line - 1 - h, c)
-        # self.offset += 1
 
+# class Spread(BaseSpectrumDraw):
+#
+#     def __init__(self, anim, use_hue=False, color_list=[colors.Red]):
+#         super(Spread, self).__init__(anim)
+#         self.height_map = [((i * (self.height / 2 - 1)) / (1023))
+#                            for i in range(1024)]
+#         self.color_map = [colors.hue2rgb((i * (255)) / (self.width - 1)) for i in range(self.width)]
+#         self.center_line = self.height / 2
+#         self.colors = color_list
+#         self.use_hue = use_hue
+#         self.offset = 0
+#
+#     def draw(self, data):
+#         # chan = len(data)
+#         # left = data[0:chan / 2]
+#         # right = data[chan / 2:chan]
+#         print data
+#         for i in range(self.width):
+#             h = self.height_map[data[(i + self.offset) % len(data)]]
+#             c = self.color_map[i]
+#             if h:
+#                 self.led.drawLine(i, self.center_line, i, self.center_line + h, c)
+#                 self.led.drawLine(i, self.center_line - 1, i, self.center_line - 1 - h, c)
+#
+#         #     h = self.height_map[right[(i + self.offset) % len(right)]]
+#         #     if h:
+#         #         self.led.drawLine(i * 2 + 1, self.center_line, i * 2 + 1, self.center_line + h, c)
+#         #         self.led.drawLine(i * 2 + 1, self.center_line - 1, i * 2 + 1, self.center_line - 1 - h, c)
+#         # self.offset += 1
+#
 
 class SpectrumMirror(BaseSpectrumDraw):
 

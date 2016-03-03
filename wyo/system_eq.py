@@ -44,7 +44,7 @@ class Recorder(object):
 
 class EQ(object):
 
-    def __init__(self, bins, max_freq=4000, log_scale=True, auto_gain=False, gain=0):
+    def __init__(self, bins, max_freq=4000, log_scale=True, auto_gain=False, gain=3):
         self.max_freq = max_freq
         self.bins = bins
         self.log_scale = log_scale
@@ -56,18 +56,6 @@ class EQ(object):
         # computes the parameters that will be used during plotting
         self.freq_vect = np.fft.rfftfreq(self.rec.chunksize, 1. / self.rec.rate)
         self.time_vect = np.arange(self.rec.chunksize, dtype=np.float32) / self.rec.rate * 1000
-
-        # extra = len(self.freq_vect) % self.bins
-        # self.margin_l = self.margin_r = extra / 2
-        # if extra % 2:
-        #     self.margin_l += 1
-        # if self.margin_l == 0:
-        #     self.margin_l = None
-        # if self.margin_r == 0:
-        #     self.margin_r = None
-        # else:
-        #     self.margin_r *= -1
-        # self.mean_factor = len(self.freq_vect) / self.bins
 
     def start(self):
         self.rec.start()
@@ -93,10 +81,6 @@ class EQ(object):
             fft_frame = np.abs(fft_frame)
             if self.log_scale:
                 fft_frame = np.log10(np.add(1, np.multiply(10, fft_frame)))
-
-            #fft_frame = fft_frame[self.margin_l:self.margin_r]
-            #fft_frame = np.mean(fft_frame.reshape(-1, self.mean_factor), axis=1)
-            #print len(fft_frame)
 
             result = [min(int(max(i, 0.) * 1023), 1023) for i in fft_frame][0:self.bins]
 

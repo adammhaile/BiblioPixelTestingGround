@@ -61,9 +61,9 @@ if __name__ == "__main__":
         # anim.run(fps=30)
 
         #eq = MSGEQ7(lower_threshold = 70)
-        eq = EQ(bins=14)
+        eq = EQ(bins=12)
         anim = Spectrum(led, audio_source=eq)
-        anim.set_draw_obj(BasicLineGraph(anim, color_list=rainbow))
+        anim.set_draw_obj(Spread(anim))
         anim.run(fps=15)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
