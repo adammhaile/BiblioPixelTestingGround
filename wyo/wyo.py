@@ -61,7 +61,7 @@ if __name__ == "__main__":
         # anim.run(fps=30)
 
         #eq = MSGEQ7(lower_threshold = 70)
-        eq = EQ(width = 64, minFrequency=100, maxFrequency=12000)
+        eq = EQ(width = 64)#, minFrequency=100, maxFrequency=12000)
         anim = Spectrum(led, audio_source=eq)
         anim.set_draw_obj(BasicLineGraph(anim, color_list=rainbow))
         anim.run(fps=15)

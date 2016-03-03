@@ -125,8 +125,8 @@ class Spread(BaseSpectrumDraw):
             h = self.height_map[data[(i + self.offset) % len(data)]]
             c = self.color_map[i]
             if h:
-                self.led.drawLine(i * 2, self.center_line, i * 2, self.center_line + h, c)
-                self.led.drawLine(i * 2, self.center_line - 1, i * 2, self.center_line - 1 - h, c)
+                self.led.drawLine(i, self.center_line, i, self.center_line + h, c)
+                self.led.drawLine(i, self.center_line - 1, i, self.center_line - 1 - h, c)
 
         #     h = self.height_map[right[(i + self.offset) % len(right)]]
         #     if h:
