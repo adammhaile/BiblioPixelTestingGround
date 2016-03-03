@@ -63,15 +63,20 @@ class MSGEQ7(object):
         self.interp_map = [max(
             0, (((i - lower_threshold) * 1023) / (1023 - lower_threshold))) for i in range(1024)]
 
-        self._struct = struct.Struct("<hhhhhhh")
-        resp = self._connect()
-        if resp != RETURN_CODES.SUCCESS:
-            MSGEQ7._printError(resp)
+        self._struct = struct.Struct("<hhhhhhhhhhhhhh")
 
     def close(self):
         if self._com != None:
             log.info("Closing connection to: " + self.dev)
             self._com.close()
+
+    def start(self):
+        resp = self._connect()
+        if resp != RETURN_CODES.SUCCESS:
+            MSGEQ7._printError(resp)
+
+    def stop(self):
+        self.close()
 
     def __exit__(self, type, value, traceback):
         self.close()
@@ -163,10 +168,11 @@ class MSGEQ7(object):
             if len(resp) != 28:
                 MSGEQ7._comError()
 
-            return (
-                [self.interp_map[i] for i in self._struct.unpack(resp[0:14])],
-                [self.interp_map[i] for i in self._struct.unpack(resp[14:28])]
-            )
+            return [self.interp_map[i] for i in self._struct.unpack(resp)]
+            # return (
+            #     [self.interp_map[i] for i in self._struct.unpack(resp[0:14])],
+            #     [self.interp_map[i] for i in self._struct.unpack(resp[14:28])]
+            # )
         except IOError:
             log.error("IO Error Communicatng With Game Pad!")
 

@@ -6,6 +6,7 @@ from collections import deque
 from bibliopixel.animation import BaseMatrixAnim
 import bibliopixel.colors as colors
 
+
 class Recorder:
     """Simple, cross-platform class to record from the microphone."""
 
@@ -27,8 +28,8 @@ class Recorder:
 
         self.p = pyaudio.PyAudio()
         self.inStream = self.p.open(format=pyaudio.paInt16, channels=1, rate=self.RATE,
-                                    input=True, output=True, frames_per_buffer=self.BUFFERSIZE)#,
-                                    #input_device_index=2)
+                                    input=True, output=True, frames_per_buffer=self.BUFFERSIZE)  # ,
+        # input_device_index=2)
 
         self.audio = numpy.empty(
             (self.buffersToRecord * self.BUFFERSIZE), dtype=numpy.int16)
@@ -53,7 +54,7 @@ class Recorder:
                 self.audio[
                     i * self.BUFFERSIZE:(i + 1) * self.BUFFERSIZE] = self.getAudio()
             self.newAudio = True
-            if forever == False:
+            if forever is False:
                 break
 
     def continuousStart(self):
@@ -96,13 +97,13 @@ class Recorder:
 
         # Calculate the power spectrum
         power = numpy.abs(fourier) ** 2
-
         matrix = numpy.zeros(outbars)
         for i in range(outbars):
             # take the log10 of the resulting sum to approximate how human ears
             # perceive sound levels
-            matrix[i] = numpy.log10(numpy.sum(power[self.piff(frequency_limits[i][
-                                    0], self.BUFFERSIZE, self.RATE):self.piff(frequency_limits[i][1], self.BUFFERSIZE, self.RATE):1]))
+            lower = self.piff(frequency_limits[i][0], self.BUFFERSIZE, self.RATE)
+            upper = self.piff(frequency_limits[i][1], self.BUFFERSIZE, self.RATE)
+            matrix[i] = numpy.log10(numpy.sum(power[lower:upper:1]))
 
         return matrix
 
@@ -120,8 +121,7 @@ class Recorder:
 
         frequency_limits.append(min_frequency)
         for i in range(1, width + 1):
-            frequency_limits.append(frequency_limits[-1]
-                                    * 10 ** (3 / (10 * (1 / octaves_per_channel))))
+            frequency_limits.append(frequency_limits[-1] * 10 ** (3 / (10 * (1 / octaves_per_channel))))
         for i in range(0, channel_length):
             frequency_store.append(
                 (frequency_limits[i], frequency_limits[i + 1]))
@@ -131,14 +131,45 @@ class Recorder:
         return frequency_store
 
 
-class EQ(BaseMatrixAnim):
+class EQ(object):
+    def __init__(self, width, minFrequency=50, maxFrequency=15000):
+        self.rec = Recorder()
+        self.width = width
+        self.frequency_limits = self.rec.calculate_channel_frequency(
+            minFrequency, maxFrequency, self.width)
 
-    def __init__(self, led, minFrequency = 10, maxFrequency = 20000):
-        super(EQ, self).__init__(led)
+    def start(self):
+        self.rec.setup()
+        self.rec.continuousStart()
+
+    def stop(self):
+        self.rec.continuousEnd()
+
+    def get_audio_data(self):
+        eq_data = self.rec.calculate_levels(self.frequency_limits, self.width)
+        result = []
+        for x in eq_data:
+            # normalize output
+            x = (x - 10.2) / 5
+            if x < 0.0:
+                x = 0.0
+            elif x > 1.0:
+                x = 1.0
+            result.append(int(x * 1023))
+
+        result = [int(i) for i in result]
+        return result
+
+
+class EQAnim(BaseMatrixAnim):
+
+    def __init__(self, led, minFrequency=10, maxFrequency=20000):
+        super(EQAnim, self).__init__(led)
         self.rec = Recorder()
         self.colors = [colors.hue_helper(y, self.height, 0)
                        for y in range(self.height)]
-        self.frequency_limits = self.rec.calculate_channel_frequency(minFrequency, maxFrequency, self.width)
+        self.frequency_limits = self.rec.calculate_channel_frequency(
+            minFrequency, maxFrequency, self.width)
 
     def preRun(self, amt=1):
         self._led.all_off()
@@ -151,10 +182,10 @@ class EQ(BaseMatrixAnim):
     def _exit(self, type, value, traceback):
         self.endRecord()
 
-    def step(self, amt = 1):
+    def step(self, amt=1):
         self._led.all_off()
         eq_data = self.rec.calculate_levels(self.frequency_limits, self.width)
-        #print eq_data
+        # print eq_data
         for x in range(self.width):
             # normalize output
             height = (eq_data[x] - 10.2) / 5
@@ -163,7 +194,7 @@ class EQ(BaseMatrixAnim):
             elif height > 1.0:
                 height = 1.0
 
-            numPix = int(round(height*(self.height+1)))
+            numPix = int(round(height * (self.height + 1)))
 
             for y in range(self.height):
                 if y < int(numPix):

@@ -21,6 +21,7 @@ if __name__ == "__main__":
         ]
         params = wyo_controller.genDisplayParams()
     except:
+        raise
         from bibliopixel.drivers.visualizer import DriverVisualizer
         os.system("start Vis.exe 64 48")
         drivers = [DriverVisualizer(width=w, height=h * 3)]
@@ -47,7 +48,7 @@ if __name__ == "__main__":
                   colors.Blue, colors.White, colors.Off]
 
     from msgeq7 import MSGEQ7, DummyData
-    from spectrum import Spectrum, BasicSpectrumGraph, SpectrumGrid, SpectrumMirror, Circles, Scroll, Spread
+    from spectrum import Spectrum, SpectrumMirror, Spread, BasicLineGraph
     rainbow = [colors.Red, colors.Orange,
                colors.Yellow, colors.Green,
                colors.Blue, colors.Indigo,
@@ -58,17 +59,12 @@ if __name__ == "__main__":
 
         # anim = EQ(led)
         # anim.run(fps=30)
-        #eq = DummyData(data="eq.dat")
-        # eq = MSGEQ7(lower_threshold = 70)
-        # anim = Spectrum(led, audio_source=eq)
-        # # # #anim.set_draw_obj(Scroll(anim, color_list=rainbow))
-        # anim.set_draw_obj(Spread(anim, color_list=rainbow))
-        # #anim.set_draw_obj(Circles(anim, colors=rainbow))
-        # #anim.set_draw_obj(SpectrumMirror(anim, fill=False, colors=rainbow))
-        # #anim.set_draw_obj(BasicSpectrumGraph(anim, fill=True, colors=rainbow))
-        # #anim.set_draw_obj(SpectrumGrid(anim))
-        #
-        # anim.run(fps=15)
+
+        #eq = MSGEQ7(lower_threshold = 70)
+        eq = EQ(width = 64, minFrequency=100, maxFrequency=12000)
+        anim = Spectrum(led, audio_source=eq)
+        anim.set_draw_obj(BasicLineGraph(anim, color_list=rainbow))
+        anim.run(fps=15)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
         # anim.run(fps=12)
