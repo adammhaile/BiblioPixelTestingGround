@@ -99,7 +99,7 @@ class Spread(BaseSpectrumDraw):
 
 DEFAULT_VIS_LIST = [
     PeakLineGraph,
-    #BasicLineGraph,
+    BasicLineGraph,
     Spread
 ]
 
@@ -164,20 +164,12 @@ def get_vis_options():
 
     return (options, options_map)
 
-
-def genPreConfig():
-    result = {
-        "audio_source": EQ(bins=64, max_freq=4000, log_scale=True, auto_gain=False, gain=3)
-    }
-
-    return result
-
 MANIFEST = [
     {
         "class": Spectrum,
         "controller": "matrix",
         "desc": "Audio Spectrum Visualizer",
-        "display": "Spectrum",
+        "display": "*Spectrum",
         "id": "Spectrum",
         "params": [
             {
@@ -188,19 +180,19 @@ MANIFEST = [
                 "type": "int",
                 "min": 0
             },
-            # {
-            #     "help": "Visualizers to run",
-            #     "id": "vis_list",
-            #     "label": "Visualizers",
-            #     "type": "multi",
-            #     "controls": {
-            #         "label": "Visualizer",
-            #         "type": "combo",
-            #         "options": get_vis_options()[0],
-            #         # "options_map": get_vis_options()[1]
-            #     },
-            #     "default": get_vis_options()[1]
-            # },
+            {
+                "help": "Visualizers to run",
+                "id": "vis_list",
+                "label": "Visualizers",
+                "type": "multi",
+                "controls": {
+                    "label": "Visualizer",
+                    "type": "combo",
+                    "options": get_vis_options()[0],
+                    # "options_map": get_vis_options()[1]
+                },
+                "default": get_vis_options()[1]
+            },
             {
                 "default": 64,
                 "help": "Divide frequency range into N bands",
