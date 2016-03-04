@@ -1,5 +1,7 @@
 from bibliopixel.animation import BaseMatrixAnim
 import bibliopixel.colors as colors
+import bibliopixel.log as log
+from system_eq import EQ
 
 
 class BaseSpectrumDraw(object):
@@ -28,42 +30,6 @@ class BaseSpectrumDraw(object):
         return [colors.hue2rgb((i * (255)) / (width - 1)) for i in range(width)]
 
 
-class BaseSpectrumGraph(BaseSpectrumDraw):
-
-    def __init__(self, anim, fill=True):
-        super(BaseSpectrumGraph, self).__init__(anim)
-        self.height_map = [((i * (self.height - 1)) / (1023))
-                           for i in range(1024)]
-        if fill:
-            self.rect = self.led.fillRect
-        else:
-            self.rect = self.led.drawRect
-
-
-class BasicSpectrumGraphOld(BaseSpectrumGraph):
-
-    def __init__(self, anim, fill=True, use_hue=False, color_list=[colors.Red]):
-        super(BasicSpectrumGraphOld, self).__init__(anim, fill=True)
-        self.colors = color_list
-        self.use_hue = use_hue
-
-    def draw(self, data):
-        chan = len(data)
-        bar_w = int(self.width / chan)
-
-        pos = (self.width - (bar_w * chan)) / 2
-        count = 0
-        for level in data:
-            if self.use_hue:
-                c = colors.hue2rgb(level)
-            else:
-                c = self.colors[count % len(self.colors)]
-            self.rect(pos, self.height - self.height_map[level],
-                      bar_w, self.height, c)
-            pos += bar_w
-            count += 1
-
-
 class PeakLineGraph(BaseSpectrumDraw):
 
     def __init__(self, anim):
@@ -88,7 +54,8 @@ class PeakLineGraph(BaseSpectrumDraw):
             if self.peak_dots:
                 if self.peaks[count] > 0 and self.peaks[count] > h:
                     for i in range(bar_w):
-                        self.led.set(pos + i, self.height - self.peaks[count], c)
+                        self.led.set(pos + i, self.height -
+                                     self.peaks[count], c)
                 if h >= self.peaks[count]:
                     self.peaks[count] = h
                 else:
@@ -128,89 +95,36 @@ class Spread(BaseSpectrumDraw):
                 self.draw_bar(pos, self.center_line - h, bar_w, h, c)
                 self.draw_bar(pos, self.center_line, bar_w, h, c)
             pos += bar_w
-        #self.offset += 1
+        # self.offset += 1
 
-
-# class Spread(BaseSpectrumDraw):
-#
-#     def __init__(self, anim, use_hue=False, color_list=[colors.Red]):
-#         super(Spread, self).__init__(anim)
-#         self.height_map = [((i * (self.height / 2 - 1)) / (1023))
-#                            for i in range(1024)]
-#         self.color_map = [colors.hue2rgb((i * (255)) / (self.width - 1)) for i in range(self.width)]
-#         self.center_line = self.height / 2
-#         self.colors = color_list
-#         self.use_hue = use_hue
-#         self.offset = 0
-#
-#     def draw(self, data):
-#         # chan = len(data)
-#         # left = data[0:chan / 2]
-#         # right = data[chan / 2:chan]
-#         print data
-#         for i in range(self.width):
-#             h = self.height_map[data[(i + self.offset) % len(data)]]
-#             c = self.color_map[i]
-#             if h:
-#                 self.led.drawLine(i, self.center_line, i, self.center_line + h, c)
-#                 self.led.drawLine(i, self.center_line - 1, i, self.center_line - 1 - h, c)
-#
-#         #     h = self.height_map[right[(i + self.offset) % len(right)]]
-#         #     if h:
-#         #         self.led.drawLine(i * 2 + 1, self.center_line, i * 2 + 1, self.center_line + h, c)
-#         #         self.led.drawLine(i * 2 + 1, self.center_line - 1, i * 2 + 1, self.center_line - 1 - h, c)
-#         # self.offset += 1
-#
-
-class SpectrumMirror(BaseSpectrumDraw):
-
-    def __init__(self, anim, fill=True, use_hue=False, color_list=[colors.Red]):
-        super(SpectrumMirror, self).__init__(anim)
-        self.height_map = [((i * (self.height / 2 - 1)) / (1023))
-                           for i in range(1024)]
-        if fill:
-            self.rect = self.led.fillRect
-        else:
-            self.rect = self.led.drawRect
-
-        self.center_line = self.height / 2
-        self.colors = color_list
-        self.use_hue = use_hue
-
-    def draw(self, data):
-        chan = len(data)
-        left = data[0:chan / 2]
-        right = data[chan / 2:chan]
-        bar_w = int(self.width / (chan / 2))
-
-        pos = (self.width - (bar_w * chan)) / 2
-        count = 0
-        for i in range(chan / 2):
-            ll = left[i]
-            lr = right[i]
-            if self.use_hue:
-                cl = colors.hue2rgb(ll)
-                cr = colors.hue2rgb(lr)
-            else:
-                cl = cr = self.colors[count % len(self.colors)]
-
-            if self.height_map[ll]:
-                self.rect(pos, self.center_line -
-                          self.height_map[ll], bar_w, self.height_map[ll], cl)
-
-            if self.height_map[lr]:
-                self.rect(pos, self.center_line, bar_w,
-                          self.height_map[lr], cr)
-            pos += bar_w
-            count += 1
+DEFAULT_VIS_LIST = [
+    PeakLineGraph,
+    #BasicLineGraph,
+    Spread
+]
 
 
 class Spectrum(BaseMatrixAnim):
 
-    def __init__(self, led, audio_source):
+    def __init__(self, led, vis_list=None, steps_per_vis=None,
+                 bins=64, max_freq=4000, log_scale=True, auto_gain=False, gain=3):
+
         super(Spectrum, self).__init__(led)
-        self.source = audio_source
+        self.source = EQ(bins=bins, max_freq=max_freq,
+                         log_scale=log_scale, auto_gain=auto_gain, gain=gain)
         self.draw_obj = None
+        self.steps_per_vis = steps_per_vis
+
+        self.vis_dict = {}
+        for v in DEFAULT_VIS_LIST:
+            self.vis_dict[v.__name__] = v(self)
+
+        self.vis_list = vis_list
+        if not self.vis_list:
+            self.vis_list = self.vis_dict.keys()
+
+        self.cur_vis = len(self.vis_list)
+        self.next_draw_obj()
 
     def preRun(self, amt=1):
         self.source.start()
@@ -218,11 +132,118 @@ class Spectrum(BaseMatrixAnim):
     def _exit(self, type, value, traceback):
         self.source.stop()
 
-    def set_draw_obj(self, obj):
-        self.draw_obj = obj
+    def next_draw_obj(self):
+        self.cur_vis += 1
+        if self.cur_vis >= len(self.vis_list):
+            self.cur_vis = 0
+        if self.draw_obj:
+            del self.draw_obj
+        name = self.vis_list[self.cur_vis]
+        log.debug("Loading {}".format(name))
+        self.draw_obj = self.vis_dict[name]
 
     def step(self, amt=1):
-        assert self.draw_obj, "Must call set_draw_obj first!"
+        assert self.draw_obj, "No loaded visualizers!"
         self._led.all_off()
         data = self.source.get_audio_data()
         self.draw_obj.draw(data)
+
+        if self.steps_per_vis:
+            self._step += 1
+            if self._step % self.steps_per_vis == 0:
+                self.next_draw_obj()
+
+
+def get_vis_options():
+    options = {}
+    options_map = [v.__name__ for v in DEFAULT_VIS_LIST]
+    count = 0
+    for name in options_map:
+        options[name] = name
+        count += 1
+
+    return (options, options_map)
+
+
+def genPreConfig():
+    result = {
+        "audio_source": EQ(bins=64, max_freq=4000, log_scale=True, auto_gain=False, gain=3)
+    }
+
+    return result
+
+MANIFEST = [
+    {
+        "class": Spectrum,
+        "controller": "matrix",
+        "desc": "Audio Spectrum Visualizer",
+        "display": "Spectrum",
+        "id": "Spectrum",
+        "params": [
+            {
+                "default": 100,
+                "help": "Frames per visualizer. 0 for no change.",
+                "id": "steps_per_vis",
+                "label": "Steps per",
+                "type": "int",
+                "min": 0
+            },
+            # {
+            #     "help": "Visualizers to run",
+            #     "id": "vis_list",
+            #     "label": "Visualizers",
+            #     "type": "multi",
+            #     "controls": {
+            #         "label": "Visualizer",
+            #         "type": "combo",
+            #         "options": get_vis_options()[0],
+            #         # "options_map": get_vis_options()[1]
+            #     },
+            #     "default": get_vis_options()[1]
+            # },
+            {
+                "default": 64,
+                "help": "Divide frequency range into N bands",
+                "id": "bins",
+                "label": "Bands",
+                "type": "int",
+                "min": 8,
+                "max": 1024
+            },
+            {
+                "default": 4000,
+                "help": "Max spectrum frequency (Hz)",
+                "id": "max_freq",
+                "label": "Max Freq",
+                "type": "int",
+                "min": 500,
+                "max": 16000
+            },
+            {
+                "default": True,
+                "help": "",
+                "id": "log_scale",
+                "label": "Use Log Scale",
+                "type": "bool"
+            },
+            {
+                "default": False,
+                "help": "",
+                "id": "auto_gain",
+                "label": "Auto Gain",
+                "type": "bool"
+            },
+            {
+                "default": 2,
+                "help": "",
+                "id": "gain",
+                "label": "Gain",
+                "type": "int",
+                "min": 0,
+                "max": 32
+            },
+        ],
+        "type": "animation",
+        "preset_type": "animation"
+    }
+]

@@ -48,7 +48,7 @@ if __name__ == "__main__":
                   colors.Blue, colors.White, colors.Off]
 
     from msgeq7 import MSGEQ7, DummyData
-    from spectrum import Spectrum, SpectrumMirror, Spread, BasicLineGraph, PeakLineGraph
+    from spectrum import Spectrum, Spread, BasicLineGraph, PeakLineGraph
     rainbow = [colors.Red, colors.Orange,
                colors.Yellow, colors.Green,
                colors.Blue, colors.Indigo,
@@ -62,8 +62,7 @@ if __name__ == "__main__":
 
         #eq = MSGEQ7(lower_threshold = 70)
         eq = EQ(bins=64)
-        anim = Spectrum(led, audio_source=eq)
-        anim.set_draw_obj(PeakLineGraph(anim))
+        anim = Spectrum(led, audio_source=eq, steps_per_vis=None)
         anim.run(fps=20)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
