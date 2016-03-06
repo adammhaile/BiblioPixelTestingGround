@@ -7,7 +7,7 @@ if __name__ == "__main__":
     import time
     import os
 
-    log.setLogLevel(log.DEBUG)
+    log.setLogLevel(log.INFO)
 
     w = NUM_LEDS_PER_STRIP = wyo_controller.width
     h = NUM_STRIPS = wyo_controller.height
@@ -61,9 +61,8 @@ if __name__ == "__main__":
         # anim.run(fps=30)
 
         #eq = MSGEQ7(lower_threshold = 70)
-        eq = EQ(bins=64)
-        anim = Spectrum(led, audio_source=eq, steps_per_vis=None)
-        anim.run(fps=20)
+        # anim = Spectrum(led, steps_per_vis=None)
+        # anim.run(fps=15)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
         # anim.run(fps=12)

@@ -1,3 +1,8 @@
+"""
+Provides everything needed to load the control and map the display for
+the WyoManiacal display, and load into PixelWeb
+"""
+
 from bibliopixel import LEDMatrix, MultiMapBuilder, mapGen
 width, height = 64, 16
 

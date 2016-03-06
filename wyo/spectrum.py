@@ -13,6 +13,8 @@ class BaseSpectrumDraw(object):
         self.led = anim._led
         self.height_map = [((i * (self.height - 1)) / (1023))
                            for i in range(1024)]
+        self.width_map = [((i * (self.width - 1)) / (1023))
+                          for i in range(1024)]
 
     def draw(self, data):
         raise NotImplementedError("Cannot call draw on the base class.")
@@ -26,8 +28,8 @@ class BaseSpectrumDraw(object):
         else:
             self.led._drawFastVLine(x, y, h, c)
 
-    def color_map(self, width):
-        return [colors.hue2rgb((i * (255)) / (width - 1)) for i in range(width)]
+    def color_map(self, width, offset=0):
+        return [colors.hue2rgb((((i * (255)) / (width - 1)) + offset) % 256) for i in range(width)]
 
 
 class PeakLineGraph(BaseSpectrumDraw):
@@ -78,8 +80,30 @@ class Spread(BaseSpectrumDraw):
 
     def __init__(self, anim):
         super(Spread, self).__init__(anim)
-        self.height_map = [((i * (self.height / 2 - 1)) / (1023))
-                           for i in range(1024)]
+        self.center_line = self.height / 2
+        self.offset = 0
+        self.color_offset = 0
+
+    def draw(self, data):
+        chan = len(data)
+        color_list = self.color_map(chan, self.color_offset)
+        bar_w = int(self.width / chan)
+        pos = (self.width - (bar_w * chan)) / 2
+        for i in range(chan):
+            h = self.height_map[data[(i + self.offset) % len(data)]]
+            c = color_list[i]
+            if h:
+                self.draw_bar(pos, self.center_line - h, bar_w, h, c)
+                self.draw_bar(pos, self.center_line, bar_w, h, c)
+            pos += bar_w
+        # self.offset += 1
+        self.color_offset += 1
+
+
+class InverseSpread(BaseSpectrumDraw):
+
+    def __init__(self, anim):
+        super(InverseSpread, self).__init__(anim)
         self.center_line = self.height / 2
         self.offset = 0
 
@@ -91,16 +115,16 @@ class Spread(BaseSpectrumDraw):
         for i in range(chan):
             h = self.height_map[data[(i + self.offset) % len(data)]]
             c = color_list[i]
-            if h:
-                self.draw_bar(pos, self.center_line - h, bar_w, h, c)
-                self.draw_bar(pos, self.center_line, bar_w, h, c)
+            self.draw_bar(pos, 0, bar_w, self.center_line - h, c)
+            self.draw_bar(pos, self.center_line + h, bar_w, self.height - h, c)
             pos += bar_w
         # self.offset += 1
 
 DEFAULT_VIS_LIST = [
-    PeakLineGraph,
-    BasicLineGraph,
-    Spread
+    #InverseSpread,
+    Spread,
+    #PeakLineGraph,
+    #BasicLineGraph
 ]
 
 
@@ -121,7 +145,7 @@ class Spectrum(BaseMatrixAnim):
 
         self.vis_list = vis_list
         if not self.vis_list:
-            self.vis_list = self.vis_dict.keys()
+            self.vis_list = [v.__name__ for v in DEFAULT_VIS_LIST]
 
         self.cur_vis = len(self.vis_list)
         self.next_draw_obj()
@@ -139,7 +163,7 @@ class Spectrum(BaseMatrixAnim):
         if self.draw_obj:
             del self.draw_obj
         name = self.vis_list[self.cur_vis]
-        log.debug("Loading {}".format(name))
+        log.info("Loading {}".format(name))
         self.draw_obj = self.vis_dict[name]
 
     def step(self, amt=1):
