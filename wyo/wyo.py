@@ -7,7 +7,7 @@ if __name__ == "__main__":
     import time
     import os
 
-    log.setLogLevel(log.INFO)
+    log.setLogLevel(log.DEBUG)
 
     w = NUM_LEDS_PER_STRIP = wyo_controller.width
     h = NUM_STRIPS = wyo_controller.height
@@ -75,7 +75,7 @@ if __name__ == "__main__":
             # anim = LangtonsAnt(led, antColor=colors.Green, pathColor=colors.Red)
             # anim.run(fps=30, seconds=5.4)#, max_steps=75)
             anim = CirclePop(led)
-            anim.run(fps=60, seconds=5)
+            anim.run(fps=30, seconds=5)
             anim = Mainframe(led, scroll = False)
             anim.run(fps=5, max_steps=40)
             anim = PerlinSimplex(led, freq=32, octaves=1, type=True)
