@@ -39,7 +39,7 @@ class PeakLineGraph(BaseSpectrumDraw):
         self.peak_dots = True
         self.peaks = [0] * self.width
 
-    def draw(self, data):
+    def draw(self, data, amt=1):
         chan = len(data)
         bar_w = int(self.width / chan)
         pos = (self.width - (bar_w * chan)) / 2
@@ -83,8 +83,10 @@ class Spread(BaseSpectrumDraw):
         self.center_line = self.height / 2
         self.offset = 0
         self.color_offset = 0
+        self.inverse = False
+        self.scroll = False
 
-    def draw(self, data):
+    def draw(self, data, amt=1):
         chan = len(data)
         color_list = self.color_map(chan, self.color_offset)
         bar_w = int(self.width / chan)
@@ -92,39 +94,45 @@ class Spread(BaseSpectrumDraw):
         for i in range(chan):
             h = self.height_map[data[(i + self.offset) % len(data)]]
             c = color_list[i]
-            if h:
-                self.draw_bar(pos, self.center_line - h, bar_w, h, c)
-                self.draw_bar(pos, self.center_line, bar_w, h, c)
+            if self.inverse:
+                self.draw_bar(pos, 0, bar_w, self.center_line - h, c)
+                self.draw_bar(pos, self.center_line + h, bar_w, self.height - h, c)
+            else:
+                if h:
+                    self.draw_bar(pos, self.center_line - h, bar_w, h, c)
+                    self.draw_bar(pos, self.center_line, bar_w, h, c)
             pos += bar_w
-        # self.offset += 1
-        self.color_offset += 1
+        if self.scroll:
+            self.offset += amt
+        self.color_offset += amt
 
 
-class InverseSpread(BaseSpectrumDraw):
+class ScrollSpread(Spread):
+    def __init__(self, anim):
+        super(ScrollSpread, self).__init__(anim)
+        self.scroll = True
 
+
+class InverseSpread(Spread):
     def __init__(self, anim):
         super(InverseSpread, self).__init__(anim)
-        self.center_line = self.height / 2
-        self.offset = 0
+        self.inverse = True
 
-    def draw(self, data):
-        chan = len(data)
-        color_list = self.color_map(chan)
-        bar_w = int(self.width / chan)
-        pos = (self.width - (bar_w * chan)) / 2
-        for i in range(chan):
-            h = self.height_map[data[(i + self.offset) % len(data)]]
-            c = color_list[i]
-            self.draw_bar(pos, 0, bar_w, self.center_line - h, c)
-            self.draw_bar(pos, self.center_line + h, bar_w, self.height - h, c)
-            pos += bar_w
-        # self.offset += 1
+
+class InverseScrollSpread(Spread):
+    def __init__(self, anim):
+        super(InverseScrollSpread, self).__init__(anim)
+        self.scroll = True
+        self.inverse = True
+
 
 DEFAULT_VIS_LIST = [
-    #InverseSpread,
     Spread,
-    #PeakLineGraph,
-    #BasicLineGraph
+    ScrollSpread,
+    InverseSpread,
+    InverseScrollSpread,
+    PeakLineGraph,
+    BasicLineGraph
 ]
 
 
@@ -170,7 +178,7 @@ class Spectrum(BaseMatrixAnim):
         assert self.draw_obj, "No loaded visualizers!"
         self._led.all_off()
         data = self.source.get_audio_data()
-        self.draw_obj.draw(data)
+        self.draw_obj.draw(data, amt)
 
         if self.steps_per_vis:
             self._step += 1
@@ -193,7 +201,7 @@ MANIFEST = [
         "class": Spectrum,
         "controller": "matrix",
         "desc": "Audio Spectrum Visualizer",
-        "display": "*Spectrum",
+        "display": "Spectrum",
         "id": "Spectrum",
         "params": [
             {

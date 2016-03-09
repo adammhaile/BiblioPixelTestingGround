@@ -61,8 +61,8 @@ if __name__ == "__main__":
         # anim.run(fps=30)
 
         #eq = MSGEQ7(lower_threshold = 70)
-        # anim = Spectrum(led, steps_per_vis=None)
-        # anim.run(fps=15)
+        anim = Spectrum(led, steps_per_vis=50, bins=64, max_freq=2000, gain=3)
+        anim.run(fps=15)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
         # anim.run(fps=12)
