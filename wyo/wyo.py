@@ -21,7 +21,6 @@ if __name__ == "__main__":
         ]
         params = wyo_controller.genDisplayParams()
     except:
-        raise
         from bibliopixel.drivers.visualizer import DriverVisualizer
         os.system("start Vis.exe 64 48")
         drivers = [DriverVisualizer(width=w, height=h * 3)]
@@ -42,6 +41,7 @@ if __name__ == "__main__":
     from BiblioPixelAnimations.matrix.circlepop import CirclePop
     from BiblioPixelAnimations.matrix.LangtonsAnt import LangtonsAnt
     from BiblioPixelAnimations.matrix.ImageAnim import ImageAnim, ImageAnimFolder
+    from BiblioPixelAnimations.matrix.ImageShow import ImageShow
     from system_eq import EQ
     from ScreenGrab import ScreenGrab
     testcolors = [colors.Red, colors.Green,
@@ -61,8 +61,8 @@ if __name__ == "__main__":
         # anim.run(fps=30)
 
         #eq = MSGEQ7(lower_threshold = 70)
-        anim = Spectrum(led, steps_per_vis=50, bins=64, max_freq=2000, gain=3)
-        anim.run(fps=15)
+        # anim = Spectrum(led, steps_per_vis=50, bins=64, max_freq=2000, gain=3)
+        # anim.run(fps=15)
         #
         # anim = ScreenGrab(led, bbox =(1920,0,1920+1024,768), mirror = False, offset = 0.0, crop = True)
         # anim.run(fps=12)
@@ -70,8 +70,9 @@ if __name__ == "__main__":
         while True:
             # anim = ImageAnimFolder(led, "./anims", cycles=3)
             # anim.run()
+            anim = ImageShow(led, imagePath="G:/ManiacalLabs/WyoDisplayVideos/logo_wyo.png", offset = (0,0))
             #anim = ImageAnim(led, imagePath="./anims/zelda.gif")
-            #anim.run()#untilComplete=True, max_cycles=20)
+            anim.run(fps=10)#untilComplete=True, max_cycles=20)
             # anim = LangtonsAnt(led, antColor=colors.Green, pathColor=colors.Red)
             # anim.run(fps=30, seconds=5.4)#, max_steps=75)
             anim = CirclePop(led)
