@@ -25,3 +25,5 @@ try:
 except KeyboardInterrupt:
     led.all_off()
     led.update()
+
+#testing emoji
